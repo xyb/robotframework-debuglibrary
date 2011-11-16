@@ -4,8 +4,8 @@
 # This software is licensed under the New BSD License. See the LICENSE
 # file in the top distribution directory for the full license text.
 
-'''A interactive shell(REPL) for RobotFramework, can be used as a library
-or a standalone script.
+'''A debug library for RobotFramework, which can be used as an interactive
+shell(REPL) also.
 
 As a library:
 *** Settings ***

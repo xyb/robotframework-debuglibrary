@@ -9,7 +9,7 @@ README = open(os.path.join(ROOT, 'README.rst')).read()
 setup(
     name = 'DebugLibrary',
     version = '0.2',
-    description = 'RobotFramework Debug Library',
+    description = 'RobotFramework debug library and an interactive shell',
     long_description = README,
     author = 'Xie Yanbo',
     author_email = 'xieyanbo@gmail.com',
