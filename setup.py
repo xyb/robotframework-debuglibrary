@@ -7,14 +7,14 @@ ROOT = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(ROOT, 'README.rst')).read()
 
 setup(
-    name = 'DebugLibrary',
-    version = '0.2.1',
+    name = 'robotframework-debuglibrary',
+    version = '0.2.2',
     description = 'RobotFramework debug library and an interactive shell',
     long_description = README,
     author = 'Xie Yanbo',
     author_email = 'xieyanbo@gmail.com',
     license = 'New BSD',
-    packages = find_packages(),
+    packages = [],
     py_modules = ['DebugLibrary'],
     entry_points = {
         'console_scripts': [
