@@ -1,3 +1,4 @@
-DebugLibrary.egg-info
+*.egg-info
 build
 dist
+*.pyc
