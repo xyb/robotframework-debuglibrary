@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 import os
-from setuptools import setup, find_packages
+from setuptools import setup
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(ROOT, 'README.rst')).read()
 
 setup(
     name = 'robotframework-debuglibrary',
-    version = '0.2.2',
+    version = '0.2.3',
     description = 'RobotFramework debug library and an interactive shell',
     long_description = README,
     author = 'Xie Yanbo',
@@ -29,7 +29,7 @@ setup(
         ],
     platforms = ['Linux', 'Unix', 'Windows', 'MacOS X'],
     classifiers = [
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Programming Language :: Python',
         'Operating System :: OS Independent',
         'License :: OSI Approved :: BSD License',

@@ -46,7 +46,7 @@ import sys
 from robot.errors import HandlerExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 
-__version__ = '0.1'
+__version__ = '0.2.3'
 
 KEYWORD_SEP = re.compile('  |\t')
 
@@ -164,7 +164,8 @@ def shell():
 
     import tempfile
     # ceate test suite file for REPL.
-    source = tempfile.NamedTemporaryFile(prefix='robot_debug', suffix='.txt')
+    source = tempfile.NamedTemporaryFile(prefix='robot_debug',
+            suffix='.txt', delete=False)
     source.write('''*** Settings ***
 Library  DebugLibrary
 
@@ -179,6 +180,10 @@ REPL
     args = '-l None -x None -o None -L None ' + source.name
     rc = robot.run_from_cli(args.split(), robot.runner.__doc__)
     sys.exit(rc)
+    source.close()
+    import os
+    if os.path.exists(source.name):
+        os.unlink(source.name)
 
 if __name__ == '__main__':
     shell()
