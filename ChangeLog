@@ -1,3 +1,8 @@
+2012-03-14  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * support Robot Framework 2.7
+    * release version 0.2.4
+
 2012-03-13  Xie Yanbo  <xieyanbo@gmail.com>
 
     * fix temporary file deleted too soon

@@ -8,7 +8,7 @@ README = open(os.path.join(ROOT, 'README.rst')).read()
 
 setup(
     name = 'robotframework-debuglibrary',
-    version = '0.2.3',
+    version = '0.2.4',
     description = 'RobotFramework debug library and an interactive shell',
     long_description = README,
     author = 'Xie Yanbo',

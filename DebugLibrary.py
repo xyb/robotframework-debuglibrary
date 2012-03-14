@@ -46,7 +46,7 @@ import sys
 from robot.errors import HandlerExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 
 KEYWORD_SEP = re.compile('  |\t')
 
@@ -175,10 +175,15 @@ REPL
 ''')
     source.flush()
 
-    import robot
-    import robot.runner
     args = '-l None -x None -o None -L None ' + source.name
-    rc = robot.run_from_cli(args.split(), robot.runner.__doc__)
+    import robot
+    try:
+        from robot import run_cli
+        rc = run_cli(args.split())
+    except ImportError:
+        import robot.runner
+        rc = robot.run_from_cli(args.split(), robot.runner.__doc__)
+
     sys.exit(rc)
     source.close()
     import os
