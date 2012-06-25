@@ -177,7 +177,11 @@ REPL
     import robot
     import robot.runner
     args = '-l None -x None -o None -L None ' + source.name
-    rc = robot.run_from_cli(args.split(), robot.runner.__doc__)
+    robot_version = robot.version.get_version()
+    if robot_version > '2.7':
+        rc = robot.run_cli(args.split())
+    else:
+        rc = robot.run_from_cli(args.split(), robot.runner.__doc__)
     sys.exit(rc)
 
 if __name__ == '__main__':
