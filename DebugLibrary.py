@@ -34,35 +34,24 @@ open browser  http://www.douban.com/
 >>>>> Exit shell.
 '''
 
-import cmd
-import re
-import sys
-
-# FIXME: why readline does not work?
-#import readline
-#readline.parse_and_bind('tab: complete')
-#readline.parse_and_bind('set editing-mode emacs')
-
 from robot.errors import HandlerExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
+import cmd
+import os
+import re
+import readline
+import sys
 
 __version__ = '0.2.4'
 
-KEYWORD_SEP = re.compile('  |\t')
+KEYWORD_SEP = re.compile('  +|\t')
 
-def output(*strings):
-    '''Output strings to console
-
-    RobotFramework captured stdout and stderr, only __stdout__ works.
-    '''
-    for arg in strings:
-        sys.__stdout__.write(arg)
 
 class BaseCmd(cmd.Cmd):
     '''Basic REPL tool'''
 
     def emptyline(self):
-        '''By default Cmd run last command if an empty line is entered.
+        '''By default Cmd runs last command if an empty line is entered.
         Disable it.'''
 
         pass
@@ -75,8 +64,8 @@ class BaseCmd(cmd.Cmd):
     def help_exit(self):
         '''Help of Exit command'''
 
-        self.stdout.write('Exit the interpreter.\n')
-        self.stdout.write('You can also use the Ctrl-D shortcut.\n')
+        print 'Exit the interpreter.'
+        print 'You can also use the Ctrl-D shortcut.'
 
     do_EOF = do_exit
     help_EOF = help_exit
@@ -84,52 +73,42 @@ class BaseCmd(cmd.Cmd):
     def help_help(self):
         '''Help of Help command'''
 
-        self.stdout.write('Show help message.\n')
+        print 'Show help message.'
 
 class DebugCmd(BaseCmd):
     '''Interactive debug shell'''
 
+    use_rawinput = True
+    prompt = '> '
     def __init__(self, completekey='tab', stdin=None, stdout=None):
-        '''Becase raw_input using sys.stdout that RobotFramework captured,
-        the prompt of Cmd is missing unless use the __stdout__'''
-
         BaseCmd.__init__(self, completekey, stdin, stdout)
-        self.stdout = sys.__stdout__
-        self.prompt = ''
-        self.use_rawinput = True
         self.rf_bi = BuiltIn()
 
     def postcmd(self, stop, line):
         '''run after a command'''
-
-        # print prompt
-        self.stdout.write('> ')
         return stop
 
     def do_selenium(self, arg):
         '''initialized selenium environment, a shortcut for web test'''
 
-        self.stdout.write('import library  SeleniumLibrary\n')
+        print 'import library  SeleniumLibrary'
         self.rf_bi.run_keyword('import library', 'SeleniumLibrary')
-        self.stdout.write('start selenium server\n')
+        print 'start selenium server'
         self.rf_bi.run_keyword('start selenium server')
         self.rf_bi.run_keyword('sleep', '2')
         if arg:
             url = arg
         else:
             url = 'http://www.google.com/'
-        self.stdout.write('open browser  %s\n' % url)
+        print 'open browser  %s' % url
         self.rf_bi.run_keyword('open browser', url)
 
     def help_selenium(self):
         '''Help of Selenium command'''
-
-        self.stdout.write('Start a selenium server, ')
-        self.stdout.write('and open google.com or other url in browser.\n')
+        print 'Start a selenium server, and open google.com or other url in browser.'
 
     def default(self, line):
         '''Run RobotFramework keywords'''
-
         command = line.strip()
         if not command:
             return
@@ -137,13 +116,13 @@ class DebugCmd(BaseCmd):
             keyword = KEYWORD_SEP.split(command)
             result = self.rf_bi.run_keyword(*keyword)
             if result:
-                output('< ', repr(result), '\n')
+                print '< ', repr(result)
         except HandlerExecutionFailed, exc:
-            output('< keyword: ', command, '\n')
-            output('! ', exc.full_message, '\n')
+            print '< keyword: ', command
+            print '! ', exc.full_message
         except Exception, exc:
-            output('< keyword: ', command, '\n')
-            output('! FAILED: ', repr(exc), '\n')
+            print '< keyword: ', command
+            print '! FAILED: ', repr(exc)
 
 class DebugLibrary(object):
     '''Debug Library for RobotFramework'''
@@ -152,12 +131,15 @@ class DebugLibrary(object):
         '''Open a interactive shell, run any RobotFramework keywords,
         seperated by two space or one tab, and Ctrl-D to exit.'''
 
-        output('\n>>>>> Enter interactive shell, ')
-        output('only accepted plain text format keyword.\n')
+        # re-wire stdout so that we can use the cmd module and have readline support
+        old_stdout = sys.stdout
+        sys.stdout = sys.__stdout__
+        print '\n>>>>> Enter interactive shell, only accepted plain text format keyword.'
         debug_cmd = DebugCmd()
-        debug_cmd.stdout.write('> ') # the first prompt
         debug_cmd.cmdloop()
-        output('\n>>>>> Exit shell.\n')
+        print '\n>>>>> Exit shell.'
+        # put stdout back where it was
+        sys.stdout = old_stdout
 
 def shell():
     '''A standalone robotframework shell'''
@@ -184,11 +166,10 @@ REPL
         import robot.runner
         rc = robot.run_from_cli(args.split(), robot.runner.__doc__)
 
-    sys.exit(rc)
     source.close()
-    import os
     if os.path.exists(source.name):
         os.unlink(source.name)
+    sys.exit(rc)
 
 if __name__ == '__main__':
     shell()
