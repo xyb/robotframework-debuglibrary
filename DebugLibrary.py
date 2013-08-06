@@ -42,7 +42,7 @@ import re
 import readline
 import sys
 
-__version__ = '0.2.4'
+__version__ = '0.3'
 
 KEYWORD_SEP = re.compile('  +|\t')
 
@@ -75,11 +75,13 @@ class BaseCmd(cmd.Cmd):
 
         print 'Show help message.'
 
+
 class DebugCmd(BaseCmd):
     '''Interactive debug shell'''
 
     use_rawinput = True
     prompt = '> '
+
     def __init__(self, completekey='tab', stdin=None, stdout=None):
         BaseCmd.__init__(self, completekey, stdin, stdout)
         self.rf_bi = BuiltIn()
@@ -124,6 +126,7 @@ class DebugCmd(BaseCmd):
             print '< keyword: ', command
             print '! FAILED: ', repr(exc)
 
+
 class DebugLibrary(object):
     '''Debug Library for RobotFramework'''
 
@@ -141,13 +144,14 @@ class DebugLibrary(object):
         # put stdout back where it was
         sys.stdout = old_stdout
 
+
 def shell():
     '''A standalone robotframework shell'''
 
     import tempfile
     # ceate test suite file for REPL.
     source = tempfile.NamedTemporaryFile(prefix='robot_debug',
-            suffix='.txt', delete=False)
+                                         suffix='.txt', delete=False)
     source.write('''*** Settings ***
 Library  DebugLibrary
 

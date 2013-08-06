@@ -8,7 +8,7 @@ README = open(os.path.join(ROOT, 'README.rst')).read()
 
 setup(
     name = 'robotframework-debuglibrary',
-    version = '0.2.4',
+    version = '0.3',
     description = 'RobotFramework debug library and an interactive shell',
     long_description = README,
     author = 'Xie Yanbo',
@@ -25,7 +25,7 @@ setup(
     url = 'https://github.com/xyb/robotframework-debuglibrary/',
     keywords = 'robotframework,debug,shell,repl',
     install_requires = [
-        'robotframework>=2.0',
+        'robotframework>=2.8',
         ],
     platforms = ['Linux', 'Unix', 'Windows', 'MacOS X'],
     classifiers = [

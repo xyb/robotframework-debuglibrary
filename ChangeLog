@@ -1,3 +1,8 @@
+2013-08-06  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * support Robot Framework 2.8
+    * release version 0.3
+
 2012-08-05  Silvio Tomatis  <silviot@gmail.com>
     * support for readline
 
