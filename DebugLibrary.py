@@ -34,6 +34,7 @@ open browser  http://www.douban.com/
 >>>>> Exit shell.
 '''
 
+from __future__ import print_function
 from robot.errors import HandlerExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 import cmd
@@ -64,8 +65,8 @@ class BaseCmd(cmd.Cmd):
     def help_exit(self):
         '''Help of Exit command'''
 
-        print 'Exit the interpreter.'
-        print 'You can also use the Ctrl-D shortcut.'
+        print('Exit the interpreter.')
+        print('You can also use the Ctrl-D shortcut.')
 
     do_EOF = do_exit
     help_EOF = help_exit
@@ -73,7 +74,7 @@ class BaseCmd(cmd.Cmd):
     def help_help(self):
         '''Help of Help command'''
 
-        print 'Show help message.'
+        print('Show help message.')
 
 
 class DebugCmd(BaseCmd):
@@ -93,21 +94,21 @@ class DebugCmd(BaseCmd):
     def do_selenium(self, arg):
         '''initialized selenium environment, a shortcut for web test'''
 
-        print 'import library  SeleniumLibrary'
+        print('import library  SeleniumLibrary')
         self.rf_bi.run_keyword('import library', 'SeleniumLibrary')
-        print 'start selenium server'
+        print('start selenium server')
         self.rf_bi.run_keyword('start selenium server')
         self.rf_bi.run_keyword('sleep', '2')
         if arg:
             url = arg
         else:
             url = 'http://www.google.com/'
-        print 'open browser  %s' % url
+        print('open browser  %s' % url)
         self.rf_bi.run_keyword('open browser', url)
 
     def help_selenium(self):
         '''Help of Selenium command'''
-        print 'Start a selenium server, and open google.com or other url in browser.'
+        print('Start a selenium server, and open google.com or other url in browser.')
 
     def default(self, line):
         '''Run RobotFramework keywords'''
@@ -118,13 +119,13 @@ class DebugCmd(BaseCmd):
             keyword = KEYWORD_SEP.split(command)
             result = self.rf_bi.run_keyword(*keyword)
             if result:
-                print '< ', repr(result)
-        except HandlerExecutionFailed, exc:
-            print '< keyword: ', command
-            print '! ', exc.full_message
-        except Exception, exc:
-            print '< keyword: ', command
-            print '! FAILED: ', repr(exc)
+                print('< ', repr(result))
+        except HandlerExecutionFailed as exc:
+            print('< keyword: %s' % command)
+            print('! %s' % exc.full_message)
+        except Exception as exc:
+            print('< keyword: %s' % command)
+            print('! FAILED: %s' % repr(exc))
 
 
 class DebugLibrary(object):
@@ -137,10 +138,10 @@ class DebugLibrary(object):
         # re-wire stdout so that we can use the cmd module and have readline support
         old_stdout = sys.stdout
         sys.stdout = sys.__stdout__
-        print '\n>>>>> Enter interactive shell, only accepted plain text format keyword.'
+        print('\n>>>>> Enter interactive shell, only accepted plain text format keyword.')
         debug_cmd = DebugCmd()
         debug_cmd.cmdloop()
-        print '\n>>>>> Exit shell.'
+        print('\n>>>>> Exit shell.')
         # put stdout back where it was
         sys.stdout = old_stdout
 
