@@ -116,7 +116,8 @@ class DebugCmd(BaseCmd):
         if not command:
             return
         try:
-            keyword = KEYWORD_SEP.split(command)
+            u_command = command.decode("utf-8")
+            keyword = KEYWORD_SEP.split(u_command)
             result = self.rf_bi.run_keyword(*keyword)
             if result:
                 print('< ', repr(result))
