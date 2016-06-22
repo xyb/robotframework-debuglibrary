@@ -40,7 +40,11 @@ from robot.libraries.BuiltIn import BuiltIn
 import cmd
 import os
 import re
-import readline
+try:
+    import readline
+except ImportError:
+    # this will fail on IronPython
+    pass
 import sys
 
 __version__ = '0.3'
