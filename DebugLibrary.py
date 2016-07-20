@@ -163,7 +163,7 @@ class DebugLibrary(object):
 
         return job_id
 
-    def get_webdriver_linked(self):
+    def get_webdriver_remote(self):
         remote_url = self.get_remote_url()
         session_id = self.get_session_id()
 
