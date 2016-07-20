@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Author: Xie Yanbo <xieyanbo@gmail.com>
+# Author: Louie Lu <louie.lu@hopebaytech.com>
 # This software is licensed under the New BSD License. See the LICENSE
 # file in the top distribution directory for the full license text.
 
@@ -22,14 +23,13 @@ $ python DebugLibrary.py
 >>>>> Enter interactive shell, only accepted plain text format keyword.
 > log  hello
 > get time
-< '2011-10-13 18:50:31'
+<  '2016-07-20 11:51:33'
 > import library  String
 > get substring  helloworld  5  8
 < 'wor'
-> selenium  http://www.douban.com/
-import library  SeleniumLibrary
-start selenium server
-open browser  http://www.douban.com/
+> selenium  https://www.google.com/
+import library  Selenium2Library
+open browser  https://www.google.com
 > Ctrl-D
 >>>>> Exit shell.
 '''
@@ -37,6 +37,7 @@ open browser  http://www.douban.com/
 from __future__ import print_function
 from robot.errors import HandlerExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
+from robot.api import logger
 import cmd
 import os
 import re
@@ -47,7 +48,7 @@ except ImportError:
     pass
 import sys
 
-__version__ = '0.3'
+__version__ = '0.6'
 
 KEYWORD_SEP = re.compile('  +|\t')
 
@@ -98,25 +99,24 @@ class DebugCmd(BaseCmd):
     def do_selenium(self, arg):
         '''initialized selenium environment, a shortcut for web test'''
 
-        print('import library  SeleniumLibrary')
-        self.rf_bi.run_keyword('import library', 'SeleniumLibrary')
-        print('start selenium server')
-        self.rf_bi.run_keyword('start selenium server')
-        self.rf_bi.run_keyword('sleep', '2')
+        print('import library  Selenium2Library')
+        self.rf_bi.run_keyword('import library', 'Selenium2Library')
+
         if arg:
             url = arg
         else:
             url = 'http://www.google.com/'
-        print('open browser  %s' % url)
-        self.rf_bi.run_keyword('open browser', url)
+        print('open browser  %s  chrome' % url)
+        self.rf_bi.run_keyword('open browser', url, "chrome")
 
     def help_selenium(self):
         '''Help of Selenium command'''
         print('Start a selenium server, and open google.com or other url in browser.')
 
     def default(self, line):
-        '''Run RobotFramework keywords'''
+        '''Run RobotFramework keywordrun_clirun_clis'''
         command = line.strip()
+
         if not command:
             return
         try:
@@ -151,6 +151,33 @@ class DebugLibrary(object):
         sys.stdout = old_stdout
 
 
+    def get_remote_url(self):
+        s = BuiltIn().get_library_instance('Selenium2Library')
+        url = s._current_browser().command_executor._url
+
+        return url
+
+    def get_session_id(self):
+        s = BuiltIn().get_library_instance('Selenium2Library')
+        job_id = s._current_browser().session_id
+
+        return job_id
+
+    def get_webdriver_linked(self):
+        remote_url = self.get_remote_url()
+        session_id = self.get_session_id()
+
+        s = 'from selenium import webdriver;d=webdriver.Remote(command_executor="%s",desired_capabilities={});d.session_id="%s"' % (
+                    remote_url,
+                    session_id
+                )
+
+        logger.console("\nDEBUG FROM CONSOLE\n%s\n" % (s))
+        logger.info(s)
+
+        return s
+
+
 def shell():
     '''A standalone robotframework shell'''
 
@@ -158,7 +185,7 @@ def shell():
     # ceate test suite file for REPL.
     source = tempfile.NamedTemporaryFile(prefix='robot_debug',
                                          suffix='.txt', delete=False)
-    source.write('''*** Settings ***
+    source.write(b'''*** Settings ***
 Library  DebugLibrary
 
 ** test case **
