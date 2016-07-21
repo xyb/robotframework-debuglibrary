@@ -1,3 +1,8 @@
+2016-07-20  Louie Lu
+    
+    * change seleniumlibrary to selenium2library
+    * Add `get_webdriver_remote` for selenium debug
+
 2015-05-20  Vincent Fretin
 
     * support Python 3
