@@ -27,9 +27,10 @@ $ python DebugLibrary.py
 > import library  String
 > get substring  helloworld  5  8
 < 'wor'
-> selenium  https://www.google.com/
+> selenium  https://www.google.com  chrome
 import library  Selenium2Library
-open browser  https://www.google.com
+open browser  https://www.google.com  chrome
+> close all browsers
 > Ctrl-D
 >>>>> Exit shell.
 '''
@@ -48,12 +49,13 @@ except ImportError:
     pass
 import sys
 
-__version__ = '0.6'
+__version__ = '0.7'
 
 KEYWORD_SEP = re.compile('  +|\t')
 
 
 class BaseCmd(cmd.Cmd):
+
     '''Basic REPL tool'''
 
     def emptyline(self):
@@ -83,6 +85,7 @@ class BaseCmd(cmd.Cmd):
 
 
 class DebugCmd(BaseCmd):
+
     '''Interactive debug shell'''
 
     use_rawinput = True
@@ -103,15 +106,21 @@ class DebugCmd(BaseCmd):
         self.rf_bi.run_keyword('import library', 'Selenium2Library')
 
         if arg:
-            url = arg
+            args = KEYWORD_SEP.split(arg)
+            if len(args) == 2:
+                url, browser = args
+            else:
+                url = arg
+                browser = 'firefox'
         else:
             url = 'http://www.google.com/'
-        print('open browser  %s  chrome' % url)
-        self.rf_bi.run_keyword('open browser', url, "chrome")
+        print('open browser  %s  %s' % (url, browser))
+        self.rf_bi.run_keyword('open browser', url, browser)
 
     def help_selenium(self):
         '''Help of Selenium command'''
-        print('Start a selenium server, and open google.com or other url in browser.')
+        print('Start a selenium 2 webdriver and open google.com or other url in firefox or other browser you expect.')
+        print('selenium  [<url>]  [<browser>]')
 
     def default(self, line):
         '''Run RobotFramework keywordrun_clirun_clis'''
@@ -134,22 +143,24 @@ class DebugCmd(BaseCmd):
 
 
 class DebugLibrary(object):
+
     '''Debug Library for RobotFramework'''
 
     def debug(self):
         '''Open a interactive shell, run any RobotFramework keywords,
         seperated by two space or one tab, and Ctrl-D to exit.'''
 
-        # re-wire stdout so that we can use the cmd module and have readline support
+        # re-wire stdout so that we can use the cmd module and have readline
+        # support
         old_stdout = sys.stdout
         sys.stdout = sys.__stdout__
-        print('\n>>>>> Enter interactive shell, only accepted plain text format keyword.')
+        print(
+            '\n>>>>> Enter interactive shell, only accepted plain text format keyword.')
         debug_cmd = DebugCmd()
         debug_cmd.cmdloop()
         print('\n>>>>> Exit shell.')
         # put stdout back where it was
         sys.stdout = old_stdout
-
 
     def get_remote_url(self):
         s = BuiltIn().get_library_instance('Selenium2Library')
@@ -168,9 +179,9 @@ class DebugLibrary(object):
         session_id = self.get_session_id()
 
         s = 'from selenium import webdriver;d=webdriver.Remote(command_executor="%s",desired_capabilities={});d.session_id="%s"' % (
-                    remote_url,
-                    session_id
-                )
+            remote_url,
+            session_id
+        )
 
         logger.console("\nDEBUG FROM CONSOLE\n%s\n" % (s))
         logger.info(s)

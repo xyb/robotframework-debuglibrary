@@ -1,7 +1,18 @@
+2016-07-21  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * select which browser you what to launch
+    * update documents
+    * build wheel format package
+    * release version 0.7
+
 2016-07-20  Louie Lu
-    
+
     * change seleniumlibrary to selenium2library
     * Add `get_webdriver_remote` for selenium debug
+
+2015-10-07  serhatbolsu
+
+    * Allow unicode characters in commands
 
 2015-05-20  Vincent Fretin
 

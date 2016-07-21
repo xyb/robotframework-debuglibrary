@@ -39,14 +39,17 @@ Or you can run it standalone as a ``RobotFramework`` shell::
     >>>>> Enter interactive shell, only accepted plain text format keyword.
     > log  hello
     > get time
-    < '2011-10-13 18:50:31'
+    <  '2011-10-13 18:50:31'
     > import library  String
     > get substring  helloworld  5  8
     < 'wor'
-    > selenium  http://www.douban.com/
-    import library  SeleniumLibrary
-    start selenium server
-    open browser  http://www.douban.com/
+    > help selenium
+    Start a selenium 2 webdriver and open google.com or other url in firefox or other browser you expect.
+    selenium  [<url>]  [<browser>]
+    > selenium  http://www.google.com/  chrome
+    import library  Selenium2Library
+    open browser  http://www.google.com/  chrome
+    > close all browsers
     > Ctrl-D
     >>>>> Exit shell.
 
