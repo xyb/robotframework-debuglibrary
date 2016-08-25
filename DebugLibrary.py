@@ -105,15 +105,16 @@ class DebugCmd(BaseCmd):
         print('import library  Selenium2Library')
         self.rf_bi.run_keyword('import library', 'Selenium2Library')
 
+        # Set defaults, overriden if args set
+        url = 'http://www.google.com/'
+        browser = 'firefox'
         if arg:
             args = KEYWORD_SEP.split(arg)
             if len(args) == 2:
                 url, browser = args
             else:
                 url = arg
-                browser = 'firefox'
-        else:
-            url = 'http://www.google.com/'
+
         print('open browser  %s  %s' % (url, browser))
         self.rf_bi.run_keyword('open browser', url, browser)
 
