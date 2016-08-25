@@ -3,7 +3,7 @@ Introduction
 
 Robotframework-DebugLibrary is A debug library for `RobotFramework`_, which can be used as an interactive shell(REPL) also.
 
-.. _`RobotFramework`: http://code.google.com/p/robotframework
+.. _`RobotFramework`: http://robotframework.org/
 
 Installation
 ============
