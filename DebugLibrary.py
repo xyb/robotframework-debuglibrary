@@ -120,7 +120,8 @@ class DebugCmd(BaseCmd):
 
     def help_selenium(self):
         '''Help of Selenium command'''
-        print('Start a selenium 2 webdriver and open google.com or other url in firefox or other browser you expect.')
+        print('Start a selenium 2 webdriver and open google.com '
+              'or other url in firefox or other browser you expect.')
         print('selenium  [<url>]  [<browser>]')
 
     def default(self, line):
@@ -155,8 +156,8 @@ class DebugLibrary(object):
         # support
         old_stdout = sys.stdout
         sys.stdout = sys.__stdout__
-        print(
-            '\n>>>>> Enter interactive shell, only accepted plain text format keyword.')
+        print('\n>>>>> Enter interactive shell, only accepted plain text '
+              'format keyword.')
         debug_cmd = DebugCmd()
         debug_cmd.cmdloop()
         print('\n>>>>> Exit shell.')
@@ -179,10 +180,13 @@ class DebugLibrary(object):
         remote_url = self.get_remote_url()
         session_id = self.get_session_id()
 
-        s = 'from selenium import webdriver;d=webdriver.Remote(command_executor="%s",desired_capabilities={});d.session_id="%s"' % (
-            remote_url,
-            session_id
-        )
+        s = 'from selenium import webdriver;' \
+            'd=webdriver.Remote(command_executor="%s",' \
+            'desired_capabilities={});' \
+            'd.session_id="%s"' % (
+                remote_url,
+                session_id
+            )
 
         logger.console("\nDEBUG FROM CONSOLE\n%s\n" % (s))
         logger.info(s)
