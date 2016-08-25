@@ -1,3 +1,11 @@
+2016-08-25  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * release version 0.7.1
+
+2016-08-24  Steve Turner
+
+    * Fix missing browser variable
+
 2016-07-21  Xie Yanbo  <xieyanbo@gmail.com>
 
     * select which browser you what to launch

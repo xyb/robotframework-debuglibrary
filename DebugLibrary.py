@@ -49,7 +49,7 @@ except ImportError:
     pass
 import sys
 
-__version__ = '0.7'
+__version__ = '0.7.1'
 
 KEYWORD_SEP = re.compile('  +|\t')
 

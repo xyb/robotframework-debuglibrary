@@ -16,7 +16,7 @@ else:
 
 setup(
     name='robotframework-debuglibrary',
-    version='0.7',
+    version='0.7.1',
     description='RobotFramework debug library and an interactive shell',
     long_description=README,
     author='Xie Yanbo',
