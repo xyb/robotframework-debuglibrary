@@ -135,10 +135,11 @@ class DebugCmd(BaseCmd):
             u_command = command.decode("utf-8")
             keyword = KEYWORD_SEP.split(u_command)
             variable_name = keyword[0].rstrip('= ')
-            
+
             if is_var(variable_name):
                 variable_value = self.rf_bi.run_keyword(*keyword[1:])
-                self.rf_bi._variables.__setitem__(variable_name, variable_value)
+                self.rf_bi._variables.__setitem__(variable_name,
+                                                  variable_value)
                 print('< ', variable_name, '=', repr(variable_value))
             else:
                 result = self.rf_bi.run_keyword(*keyword)
