@@ -1,3 +1,11 @@
+2016-09-25  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * release version 0.8
+
+2016-09-23  Juha Jokimäki
+
+    * Support assigning variables
+
 2016-08-25  Xie Yanbo  <xieyanbo@gmail.com>
 
     * release version 0.7.1
@@ -13,7 +21,7 @@
     * build wheel format package
     * release version 0.7
 
-2016-07-20  Louie Lu
+2016-07-20  Louie Lu  <louie.lu@hopebaytech.com>
 
     * change seleniumlibrary to selenium2library
     * Add `get_webdriver_remote` for selenium debug

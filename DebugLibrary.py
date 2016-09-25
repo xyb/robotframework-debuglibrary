@@ -27,6 +27,10 @@ $ python DebugLibrary.py
 > import library  String
 > get substring  helloworld  5  8
 < 'wor'
+> ${secs} =  Get Time  epoch
+<  ${secs} = 1474814470
+> Log to console  ${secs}
+1474814470
 > selenium  https://www.google.com  chrome
 import library  Selenium2Library
 open browser  https://www.google.com  chrome
@@ -50,7 +54,7 @@ except ImportError:
     pass
 import sys
 
-__version__ = '0.7.1'
+__version__ = '0.8'
 
 KEYWORD_SEP = re.compile('  +|\t')
 

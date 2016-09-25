@@ -43,6 +43,17 @@ Or you can run it standalone as a ``RobotFramework`` shell::
     > import library  String
     > get substring  helloworld  5  8
     < 'wor'
+    > ${secs} =  Get Time  epoch
+    <  ${secs} = 1474814470
+    > Log to console  ${secs}
+    1474814470
+    > @{list} =  Create List    hello    world
+    <  @{list} = [u'hello', u'world']
+    > Log to console  ${list}
+    [u'hello', u'world']
+    > &{dict} =  Create Dictionary    name=admin    email=admin@test.local
+    <  &{dict} = {u'name': u'admin', u'email': u'admin@test.local'}
+    > Log  ${dict.name}
     > help selenium
     Start a selenium 2 webdriver and open google.com or other url in firefox or other browser you expect.
     selenium  [<url>]  [<browser>]
