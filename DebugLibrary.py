@@ -40,22 +40,24 @@ open browser  https://www.google.com  chrome
 '''
 
 from __future__ import print_function
-from robot.errors import HandlerExecutionFailed
-from robot.libraries.BuiltIn import BuiltIn
-from robot.api import logger
-from robot.variables import is_var
+
 import cmd
 import os
 import re
 import sys
+
+from robot.api import logger
+from robot.errors import HandlerExecutionFailed
+from robot.libraries.BuiltIn import BuiltIn
+from robot.variables import is_var
+
 try:
     import readline
 except ImportError:
     # this will fail on IronPython
     pass
-import sys
 
-__version__ = '0.8'
+__version__ = '0.8.1'
 
 KEYWORD_SEP = re.compile('  +|\t')
 
@@ -137,7 +139,7 @@ class DebugCmd(BaseCmd):
         if not command:
             return
         try:
-            u_command=''
+            u_command = ''
             if sys.version_info > (3,):
                 u_command = command
             else:
