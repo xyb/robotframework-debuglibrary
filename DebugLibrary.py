@@ -47,6 +47,7 @@ from robot.variables import is_var
 import cmd
 import os
 import re
+import sys
 try:
     import readline
 except ImportError:
@@ -136,7 +137,11 @@ class DebugCmd(BaseCmd):
         if not command:
             return
         try:
-            u_command = command.decode("utf-8")
+            u_command=''
+            if sys.version_info > (3,):
+                u_command = command
+            else:
+                u_command = command.decode("utf-8")
             keyword = KEYWORD_SEP.split(u_command)
             variable_name = keyword[0].rstrip('= ')
 
