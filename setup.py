@@ -10,13 +10,13 @@ PY3 = sys.version_info[0] == 3
 
 install_requires = []
 if PY3:
-    install_requires.append('robotframework-python3 >= 2.8')
+    install_requires.append('robotframework >= 3.0')
 else:
     install_requires.append('robotframework >= 2.8')
 
 setup(
     name='robotframework-debuglibrary',
-    version='0.8',
+    version='0.8.1',
     description='RobotFramework debug library and an interactive shell',
     long_description=README,
     author='Xie Yanbo',
