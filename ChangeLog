@@ -1,3 +1,11 @@
+2017-07-27  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * release version 0.8.2
+
+2017-07-26  asiekkinen
+
+    * support non-UTF8 encoding terminals
+
 2017-07-11  Xie Yanbo  <xieyanbo@gmail.com>
 
     * robotframework 3.0 officially supported Python 3

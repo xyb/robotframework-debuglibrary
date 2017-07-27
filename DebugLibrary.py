@@ -57,7 +57,7 @@ except ImportError:
     # this will fail on IronPython
     pass
 
-__version__ = '0.8.1'
+__version__ = '0.8.2'
 
 KEYWORD_SEP = re.compile('  +|\t')
 
@@ -245,6 +245,7 @@ REPL
     if os.path.exists(source.name):
         os.unlink(source.name)
     sys.exit(rc)
+
 
 if __name__ == '__main__':
     shell()
