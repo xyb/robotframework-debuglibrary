@@ -61,6 +61,8 @@ __version__ = '0.8.1'
 
 KEYWORD_SEP = re.compile('  +|\t')
 
+COMMAND_LINE_ENCODING = sys.stdout.encoding or 'utf-8'
+
 
 class BaseCmd(cmd.Cmd):
 
@@ -143,7 +145,7 @@ class DebugCmd(BaseCmd):
             if sys.version_info > (3,):
                 u_command = command
             else:
-                u_command = command.decode("utf-8")
+                u_command = command.decode(COMMAND_LINE_ENCODING)
             keyword = KEYWORD_SEP.split(u_command)
             variable_name = keyword[0].rstrip('= ')
 
