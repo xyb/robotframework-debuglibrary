@@ -141,6 +141,8 @@ class DebugCmd(BaseCmd):
                 url, browser = args
             else:
                 url = arg
+        if '://' not in url:
+            url = 'http://' + url
 
         print('open browser  %s  %s' % (url, browser))
         self.rf_bi.run_keyword('open browser', url, browser)
@@ -291,7 +293,11 @@ class DebugLibrary(object):
                 session_id
             )
 
-        logger.console("\nDEBUG FROM CONSOLE\n%s\n" % (s))
+        logger.console('''
+DEBUG FROM CONSOLE
+# geckodriver user please check https://stackoverflow.com/a/37968826/150841
+%s
+''' % (s))
         logger.info(s)
 
         return s
