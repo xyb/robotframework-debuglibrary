@@ -5,7 +5,7 @@
 # This software is licensed under the New BSD License. See the LICENSE
 # file in the top distribution directory for the full license text.
 
-'''A debug library for RobotFramework, which can be used as an interactive
+"""A debug library for RobotFramework, which can be used as an interactive
 shell(REPL) also.
 
 As a library:
@@ -37,7 +37,7 @@ open browser  https://www.google.com  chrome
 > close all browsers
 > Ctrl-D
 >>>>> Exit shell.
-'''
+"""
 
 from __future__ import print_function
 
@@ -66,21 +66,21 @@ COMMAND_LINE_ENCODING = sys.stdout.encoding or 'utf-8'
 
 class BaseCmd(cmd.Cmd):
 
-    '''Basic REPL tool'''
+    """Basic REPL tool"""
 
     def emptyline(self):
-        '''By default Cmd runs last command if an empty line is entered.
-        Disable it.'''
+        """By default Cmd runs last command if an empty line is entered.
+        Disable it."""
 
         pass
 
     def do_exit(self, arg):
-        '''Exit'''
+        """Exit"""
 
         return True
 
     def help_exit(self):
-        '''Help of Exit command'''
+        """Help of Exit command"""
 
         print('Exit the interpreter.')
         print('You can also use the Ctrl-D shortcut.')
@@ -89,16 +89,18 @@ class BaseCmd(cmd.Cmd):
     help_EOF = help_exit
 
     def help_help(self):
-        '''Help of Help command'''
+        """Help of Help command"""
 
         print('Show help message.')
 
     def do_pdb(self, arg):
+        """Run python debugger pdb"""
         print('break into python debugger: pdb')
         import pdb
         pdb.set_trace()
 
     def help_pdb(self):
+        """Help of pdb command"""
         print('pdb')
         print('Enter the python debuger pdb. For development only.')
 
@@ -111,7 +113,7 @@ def get_libs():
 
 class DebugCmd(BaseCmd):
 
-    '''Interactive debug shell'''
+    """Interactive debug shell"""
 
     use_rawinput = True
     prompt = '> '
@@ -121,11 +123,11 @@ class DebugCmd(BaseCmd):
         self.rf_bi = BuiltIn()
 
     def postcmd(self, stop, line):
-        '''run after a command'''
+        """run after a command"""
         return stop
 
     def do_selenium(self, arg):
-        '''initialized selenium environment, a shortcut for web test'''
+        """initialized selenium environment, a shortcut for web test"""
 
         print('import library  Selenium2Library')
         self.rf_bi.run_keyword('import library', 'Selenium2Library')
@@ -146,7 +148,7 @@ class DebugCmd(BaseCmd):
     do_s = do_selenium
 
     def help_selenium(self):
-        '''Help of Selenium command'''
+        """Help of Selenium command"""
         print('s(elenium)  [<url>]  [<browser>]')
         print('Start a selenium 2 webdriver and open google.com '
               'or other url in firefox or other browser you expect.')
@@ -154,7 +156,7 @@ class DebugCmd(BaseCmd):
     help_s = help_selenium
 
     def default(self, line):
-        '''Run RobotFramework keywordrun_clirun_clis'''
+        """Run RobotFramework keywords"""
         command = line.strip()
 
         if not command:
@@ -201,6 +203,7 @@ class DebugCmd(BaseCmd):
     do_l = do_libs
 
     def help_libs(self):
+        """Help of libs command"""
         print('l(ibs) [-s]')
         print('Print imported and builtin libraries, with source path')
         print('if `-s` specified.')
@@ -208,6 +211,7 @@ class DebugCmd(BaseCmd):
     help_l = help_libs
 
     def do_keywords(self, args):
+        """Print keywords of RobotFramework libraries."""
         from robot.libdocpkg.robotbuilder import LibraryDocBuilder
         lib_name = args
         libs = [_.name for _ in get_libs()]
@@ -225,23 +229,25 @@ class DebugCmd(BaseCmd):
     do_k = do_keywords
 
     def help_keywords(self):
-        print('k(eywords) [<name>]')
-        print(
-            'Print keywords of libraries, all or lib name starts with <name>')
+        """Help of keywords command"""
+        print('k(eywords) [<lib_name>]')
+        print('Print keywords of libraries, all or starts with <lib_name>')
 
     help_k = help_keywords
 
 
 class DebugLibrary(object):
 
-    '''Debug Library for RobotFramework'''
+    """Debug Library for RobotFramework"""
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
     ROBOT_LIBRARY_VERSION = __version__
 
     def debug(self):
-        '''Open a interactive shell, run any RobotFramework keywords,
-        seperated by two space or one tab, and Ctrl-D to exit.'''
+        """Open a interactive shell, run any RobotFramework keywords.
+
+        Keywords seperated by two space or one tab, and Ctrl-D to exit.
+        """
 
         # re-wire stdout so that we can use the cmd module and have readline
         # support
@@ -256,18 +262,21 @@ class DebugLibrary(object):
         sys.stdout = old_stdout
 
     def get_remote_url(self):
+        """Get selenium URL for connecting to remote WebDriver."""
         s = BuiltIn().get_library_instance('Selenium2Library')
         url = s._current_browser().command_executor._url
 
         return url
 
     def get_session_id(self):
+        """Get selenium browser session id."""
         s = BuiltIn().get_library_instance('Selenium2Library')
         job_id = s._current_browser().session_id
 
         return job_id
 
     def get_webdriver_remote(self):
+        """Print the way connecting to remote selenium server."""
         remote_url = self.get_remote_url()
         session_id = self.get_session_id()
 
@@ -286,7 +295,7 @@ class DebugLibrary(object):
 
 
 def shell():
-    '''A standalone robotframework shell'''
+    """A standalone robotframework shell"""
 
     import tempfile
     # ceate test suite file for REPL.
@@ -301,7 +310,7 @@ REPL
 ''')
     source.flush()
 
-    args = '-l None -x None -o None -L None ' + source.name
+    args = '-l None -x None -o None -L None -r None ' + source.name
     import robot
     try:
         from robot import run_cli
