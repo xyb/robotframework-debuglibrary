@@ -52,7 +52,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.variables import is_var
 
 try:
-    import readline
+    import readline  # noqa
 except ImportError:
     # this will fail on IronPython
     pass
@@ -93,6 +93,21 @@ class BaseCmd(cmd.Cmd):
 
         print('Show help message.')
 
+    def do_pdb(self, arg):
+        print('break into python debugger: pdb')
+        import pdb
+        pdb.set_trace()
+
+    def help_pdb(self):
+        print('pdb')
+        print('Enter the python debuger pdb. For development only.')
+
+
+def get_libs():
+    """get libraries robotframework imported"""
+    from robot.running.namespace import IMPORTER
+    return sorted(IMPORTER._library_cache._items, key=lambda _: _.name)
+
 
 class DebugCmd(BaseCmd):
 
@@ -128,11 +143,15 @@ class DebugCmd(BaseCmd):
         print('open browser  %s  %s' % (url, browser))
         self.rf_bi.run_keyword('open browser', url, browser)
 
+    do_s = do_selenium
+
     def help_selenium(self):
         '''Help of Selenium command'''
+        print('s(elenium)  [<url>]  [<browser>]')
         print('Start a selenium 2 webdriver and open google.com '
               'or other url in firefox or other browser you expect.')
-        print('selenium  [<url>]  [<browser>]')
+
+    help_s = help_selenium
 
     def default(self, line):
         '''Run RobotFramework keywordrun_clirun_clis'''
@@ -165,10 +184,60 @@ class DebugCmd(BaseCmd):
             print('< keyword: %s' % command)
             print('! FAILED: %s' % repr(exc))
 
+    def do_libs(self, args):
+        """Print libraries robotframework imported and builtin."""
+        print('< Imported libraries:')
+        for lib in get_libs():
+            print('   {0} {1}'.format(lib.name, lib.version))
+            if lib.doc:
+                print('       {}'.format(lib.doc.split('\n')[0]))
+            if '-s' in args:
+                print('       {}'.format(lib.source))
+        print('< Bultin libraries:')
+        from robot.libraries import STDLIBS
+        for name in sorted(list(STDLIBS)):
+            print('   ', name)
+
+    do_l = do_libs
+
+    def help_libs(self):
+        print('l(ibs) [-s]')
+        print('Print imported and builtin libraries, with source path')
+        print('if `-s` specified.')
+
+    help_l = help_libs
+
+    def do_keywords(self, args):
+        from robot.libdocpkg.robotbuilder import LibraryDocBuilder
+        lib_name = args
+        libs = [_.name for _ in get_libs()]
+        matched = [_ for _ in libs if _.lower().startswith(lib_name)]
+        if not matched:
+            print('< not found library', lib_name)
+            return
+        for name in matched:
+            print('< Keywords of library', name)
+            lib = LibraryDocBuilder().build(name)
+            for keyword in lib.keywords:
+                print('   {0:<12s}\t{1}'.format(keyword.name,
+                                                keyword.doc.split('\n')[0]))
+
+    do_k = do_keywords
+
+    def help_keywords(self):
+        print('k(eywords) [<name>]')
+        print(
+            'Print keywords of libraries, all or lib name starts with <name>')
+
+    help_k = help_keywords
+
 
 class DebugLibrary(object):
 
     '''Debug Library for RobotFramework'''
+
+    ROBOT_LIBRARY_SCOPE = 'GLOBAL'
+    ROBOT_LIBRARY_VERSION = __version__
 
     def debug(self):
         '''Open a interactive shell, run any RobotFramework keywords,
