@@ -47,7 +47,7 @@ import re
 import sys
 
 from robot.api import logger
-from robot.errors import HandlerExecutionFailed
+from robot.errors import ExecutionFailed, HandlerExecutionFailed
 from robot.libraries.BuiltIn import BuiltIn
 from robot.variables import is_var
 
@@ -179,6 +179,9 @@ class DebugCmd(BaseCmd):
                 result = self.rf_bi.run_keyword(*keyword)
                 if result:
                     print('< ', repr(result))
+        except ExecutionFailed as exc:
+            print('< keyword: %s' % command)
+            print('! %s' % exc.message)
         except HandlerExecutionFailed as exc:
             print('< keyword: %s' % command)
             print('! %s' % exc.full_message)
