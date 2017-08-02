@@ -1,3 +1,8 @@
+2017-07-31  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * add libs and keywords command for introspection
+    * update document and help
+
 2017-07-27  Xie Yanbo  <xieyanbo@gmail.com>
 
     * release version 0.8.2
