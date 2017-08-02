@@ -57,7 +57,7 @@ except ImportError:
     # this will fail on IronPython
     pass
 
-__version__ = '0.8.2'
+__version__ = '0.9.0'
 
 KEYWORD_SEP = re.compile('  +|\t')
 
