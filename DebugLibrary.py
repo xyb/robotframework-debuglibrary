@@ -111,6 +111,38 @@ def get_libs():
     return sorted(IMPORTER._library_cache._items, key=lambda _: _.name)
 
 
+def run_keyword(bi, command):
+    if not command:
+        return
+    try:
+        u_command = ''
+        if sys.version_info > (3,):
+            u_command = command
+        else:
+            u_command = command.decode(COMMAND_LINE_ENCODING)
+        keyword = KEYWORD_SEP.split(u_command)
+        variable_name = keyword[0].rstrip('= ')
+
+        if is_var(variable_name):
+            variable_value = bi.run_keyword(*keyword[1:])
+            bi._variables.__setitem__(variable_name,
+                                      variable_value)
+            print('< ', variable_name, '=', repr(variable_value))
+        else:
+            result = bi.run_keyword(*keyword)
+            if result:
+                print('< ', repr(result))
+    except ExecutionFailed as exc:
+        print('< keyword: %s' % command)
+        print('! %s' % exc.message)
+    except HandlerExecutionFailed as exc:
+        print('< keyword: %s' % command)
+        print('! %s' % exc.full_message)
+    except Exception as exc:
+        print('< keyword: %s' % command)
+        print('! FAILED: %s' % repr(exc))
+
+
 class DebugCmd(BaseCmd):
 
     """Interactive debug shell"""
@@ -129,8 +161,8 @@ class DebugCmd(BaseCmd):
     def do_selenium(self, arg):
         """initialized selenium environment, a shortcut for web test"""
 
-        print('import library  Selenium2Library')
-        self.rf_bi.run_keyword('import library', 'Selenium2Library')
+        command = 'import library  Selenium2Library'
+        run_keyword(self.rf_bi, command)
 
         # Set defaults, overriden if args set
         url = 'http://www.google.com/'
@@ -144,8 +176,9 @@ class DebugCmd(BaseCmd):
         if '://' not in url:
             url = 'http://' + url
 
-        print('open browser  %s  %s' % (url, browser))
-        self.rf_bi.run_keyword('open browser', url, browser)
+        command = 'open browser  %s  %s' % (url, browser)
+        print(command)
+        run_keyword(self.rf_bi, command)
 
     do_s = do_selenium
 
@@ -161,35 +194,7 @@ class DebugCmd(BaseCmd):
         """Run RobotFramework keywords"""
         command = line.strip()
 
-        if not command:
-            return
-        try:
-            u_command = ''
-            if sys.version_info > (3,):
-                u_command = command
-            else:
-                u_command = command.decode(COMMAND_LINE_ENCODING)
-            keyword = KEYWORD_SEP.split(u_command)
-            variable_name = keyword[0].rstrip('= ')
-
-            if is_var(variable_name):
-                variable_value = self.rf_bi.run_keyword(*keyword[1:])
-                self.rf_bi._variables.__setitem__(variable_name,
-                                                  variable_value)
-                print('< ', variable_name, '=', repr(variable_value))
-            else:
-                result = self.rf_bi.run_keyword(*keyword)
-                if result:
-                    print('< ', repr(result))
-        except ExecutionFailed as exc:
-            print('< keyword: %s' % command)
-            print('! %s' % exc.message)
-        except HandlerExecutionFailed as exc:
-            print('< keyword: %s' % command)
-            print('! %s' % exc.full_message)
-        except Exception as exc:
-            print('< keyword: %s' % command)
-            print('! FAILED: %s' % repr(exc))
+        run_keyword(self.rf_bi, command)
 
     def do_libs(self, args):
         """Print libraries robotframework imported and builtin."""
