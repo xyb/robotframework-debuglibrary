@@ -74,6 +74,9 @@ class BaseCmd(cmd.Cmd):
 
         pass
 
+    def completedefault(self, text, line, begidx, endidx):
+        return []
+
     def do_exit(self, arg):
         """Exit"""
 
@@ -109,6 +112,12 @@ def get_libs():
     """get libraries robotframework imported"""
     from robot.running.namespace import IMPORTER
     return sorted(IMPORTER._library_cache._items, key=lambda _: _.name)
+
+
+def match_libs(name):
+    libs = [_.name for _ in get_libs()]
+    matched = [_ for _ in libs if _.lower().startswith(name.lower())]
+    return matched
 
 
 def run_keyword(bi, command):
@@ -190,6 +199,23 @@ class DebugCmd(BaseCmd):
 
     help_s = help_selenium
 
+    def complete_selenium(self, text, line, begidx, endidx):
+        webdrivers = ['firefox',
+                      'chrome',
+                      'ie',
+                      'opera',
+                      'safari',
+                      'phantomjs',
+                      'remote']
+        if len(line.split()) == 3:
+            command, url, driver_name = line.lower().split()
+            return [s for s in webdrivers if s.startswith(driver_name)]
+        elif len(line.split()) == 2 and line.endswith(' '):
+            return webdrivers
+        return []
+
+    complete_s = complete_selenium
+
     def default(self, line):
         """Run RobotFramework keywords"""
         command = line.strip()
@@ -224,8 +250,7 @@ class DebugCmd(BaseCmd):
         """Print keywords of RobotFramework libraries."""
         from robot.libdocpkg.robotbuilder import LibraryDocBuilder
         lib_name = args
-        libs = [_.name for _ in get_libs()]
-        matched = [_ for _ in libs if _.lower().startswith(lib_name)]
+        matched = match_libs(lib_name)
         if not matched:
             print('< not found library', lib_name)
             return
@@ -244,6 +269,16 @@ class DebugCmd(BaseCmd):
         print('Print keywords of libraries, all or starts with <lib_name>')
 
     help_k = help_keywords
+
+    def complete_keywords(self, text, line, begidx, endidx):
+        if len(line.split()) == 2:
+            command, lib_name = line.split()
+            return match_libs(lib_name)
+        elif len(line.split()) == 1 and line.endswith(' '):
+            return [_.name for _ in get_libs()]
+        return []
+
+    complete_k = complete_keywords
 
 
 class DebugLibrary(object):
