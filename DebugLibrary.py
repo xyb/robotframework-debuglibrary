@@ -61,7 +61,20 @@ __version__ = '0.9.0'
 
 KEYWORD_SEP = re.compile('  +|\t')
 
-COMMAND_LINE_ENCODING = sys.stdout.encoding or 'utf-8'
+
+def get_command_line_encoding():
+    encoding = ''
+    try:
+        encoding = sys.stdout.encoding
+    except AttributeError:
+        try:
+            encoding = sys.__stdout__.encoding
+        except Exception:
+            pass
+    return encoding or 'utf-8'
+
+
+COMMAND_LINE_ENCODING = get_command_line_encoding()
 
 
 class BaseCmd(cmd.Cmd):
