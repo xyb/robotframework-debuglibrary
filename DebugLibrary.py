@@ -45,6 +45,14 @@ import cmd
 import os
 import re
 import sys
+from functools import wraps
+
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.completion import Completer, Completion
+from prompt_toolkit.contrib.completers import WordCompleter
+from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.interface import AbortAction
+from prompt_toolkit.shortcuts import prompt
 
 from robot.api import logger
 from robot.errors import ExecutionFailed, HandlerExecutionFailed
@@ -54,18 +62,13 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.running.namespace import IMPORTER
 from robot.variables import is_var
 
-try:
-    import readline  # noqa
-except ImportError:
-    # this will fail on IronPython
-    pass
-
 __version__ = '0.9.1'
 
 KEYWORD_SEP = re.compile('  +|\t')
 
 
 def get_command_line_encoding():
+    """Get encoding from shell environment, default utf-8"""
     encoding = ''
     try:
         encoding = sys.stdout.encoding
@@ -119,17 +122,54 @@ class BaseCmd(cmd.Cmd):
 
 
 def get_libs():
-    """get libraries robotframework imported"""
+    """Get libraries robotframework imported"""
     return sorted(IMPORTER._library_cache._items, key=lambda _: _.name)
 
 
-def match_libs(name):
+def match_libs(name=''):
+    """Find libraries by prefix of library name, default all"""
     libs = [_.name for _ in get_libs()]
     matched = [_ for _ in libs if _.lower().startswith(name.lower())]
     return matched
 
 
+def memoize(function):
+    """Memoization decorator"""
+    memo = {}
+
+    @wraps(function)
+    def wrapper(*args):
+        if args in memo:
+            return memo[args]
+        else:
+            rv = function(*args)
+            memo[args] = rv
+            return rv
+    return wrapper
+
+
+@memoize
+def get_lib_keywords(lib_name):
+    """Get keywords of library lib_name"""
+    lib = LibraryDocBuilder().build(lib_name)
+    keywords = []
+    for keyword in lib.keywords:
+        doc = keyword.doc.split('\n')[0]
+        keywords.append({'name': keyword.name,
+                         'lib': lib_name,
+                         'doc': doc})
+    return keywords
+
+
+def get_keywords():
+    """Get all keywords of libraries"""
+    for lib in get_libs():
+        for keyword in get_lib_keywords(lib.name):
+            yield keyword
+
+
 def run_keyword(bi, command):
+    """Run a keyword in robotframewrk environment"""
     if not command:
         return
     try:
@@ -161,23 +201,141 @@ def run_keyword(bi, command):
         print('! FAILED: %s' % repr(exc))
 
 
-class DebugCmd(BaseCmd):
+class CmdCompleter(Completer):
+
+    """Completer for debug shell"""
+
+    def __init__(self, commands):
+        self.names = []
+        self.displays = {}
+        self.display_metas = {}
+        for name, display, display_meta in commands:
+            self.names.append(name)
+            self.displays[name] = display
+            self.display_metas[name] = display_meta
+
+    def get_completions(self, document, complete_event):
+        """Compute suggestions"""
+        text = document.text_before_cursor.lower()
+        for name in self.names:
+            library_level = '.' in name and '.' in text
+            root_level = '.' not in name and '.' not in text
+            if not (root_level or library_level):
+                continue
+
+            if name.lower().strip().startswith(text.strip()):
+                display = self.displays.get(name, '')
+                display_meta = self.display_metas.get(name, '')
+                yield Completion(name,
+                                 -len(text),
+                                 display=display,
+                                 display_meta=display_meta)
+
+
+class PtkCmd(BaseCmd):
+
+    """CMD shell using prompt-toolkit"""
+
+    def __init__(self, completekey='tab', stdin=None, stdout=None):
+        BaseCmd.__init__(self, completekey, stdin, stdout)
+        self.history = InMemoryHistory()
+
+    def get_cmd_names(self):
+        """Get all command names of CMD shell"""
+        pre = 'do_'
+        cut = len(pre)
+        return [_[cut:] for _ in self.get_names() if _.startswith(pre)]
+
+    def get_completer_words(self):
+        """Get command name suggestion list"""
+        return self.get_cmd_names()
+
+    def get_completer(self):
+        """Get completer instance"""
+        words = self.get_completer_words()
+        commands = [(cmd_name, '', '') for cmd_name in words]
+        cmd_completer = CmdCompleter(commands)
+        return cmd_completer
+
+    def cmdloop(self, intro=None):
+        """Better command loop supported by prompt_toolkit
+
+        override default cmdloop method
+        """
+        if intro is not None:
+            self.intro = intro
+        if self.intro:
+            self.stdout.write(str(self.intro) + '\n')
+
+        stop = None
+        while not stop:
+            if self.cmdqueue:
+                line = self.cmdqueue.pop(0)
+            else:
+                try:
+                    line = prompt(self.prompt,
+                                  history=self.history,
+                                  auto_suggest=AutoSuggestFromHistory(),
+                                  enable_history_search=True,
+                                  completer=self.get_completer(),
+                                  display_completions_in_columns=True,
+                                  on_abort=AbortAction.RETRY)
+                except EOFError:
+                    line = 'EOF'
+            line = self.precmd(line)
+            stop = self.onecmd(line)
+            stop = self.postcmd(stop, line)
+        self.postloop()
+
+
+class DebugCmd(PtkCmd):
 
     """Interactive debug shell"""
 
     use_rawinput = True
-    prompt = '> '
+    prompt = u'> '
 
     def __init__(self, completekey='tab', stdin=None, stdout=None):
-        BaseCmd.__init__(self, completekey, stdin, stdout)
+        PtkCmd.__init__(self, completekey, stdin, stdout)
         self.rf_bi = BuiltIn()
 
     def postcmd(self, stop, line):
-        """run after a command"""
+        """Run after a command"""
         return stop
 
+    def get_completer(self):
+        """Get completer instance specified for robotframework"""
+        # commands
+        words = self.get_cmd_names()
+        commands = [(cmd_name,
+                     cmd_name,
+                     'DEBUG command: {0}'.format(cmd_name))
+                    for cmd_name in words]
+
+        # libraries
+        for lib in get_libs():
+            commands.append((lib.name,
+                             lib.name,
+                             'Library: {0} {1}'.format(lib.name, lib.version)))
+
+        # keywords
+        for keyword in get_keywords():
+            # name with library
+            name = keyword['lib'] + '.' + keyword['name']
+            commands.append((name,
+                             keyword['name'],
+                             'Keyword: {0}'.format(keyword['doc'])))
+            # name without library
+            commands.append((keyword['name'],
+                             keyword['name'],
+                             'Keyword[{0}.]: {1}'.format(keyword['lib'],
+                                                         keyword['doc'])))
+
+        cmd_completer = CmdCompleter(commands)
+        return cmd_completer
+
     def do_selenium(self, arg):
-        """initialized selenium environment, a shortcut for web test"""
+        """Initialized selenium environment, a shortcut for web test"""
 
         command = 'import library  Selenium2Library'
         run_keyword(self.rf_bi, command)
