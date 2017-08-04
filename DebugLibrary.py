@@ -67,10 +67,7 @@ def get_command_line_encoding():
     try:
         encoding = sys.stdout.encoding
     except AttributeError:
-        try:
-            encoding = sys.__stdout__.encoding
-        except Exception:
-            pass
+        encoding = sys.__stdout__.encoding
     return encoding or 'utf-8'
 
 
@@ -86,9 +83,6 @@ class BaseCmd(cmd.Cmd):
         Disable it."""
 
         pass
-
-    def completedefault(self, text, line, begidx, endidx):
-        return []
 
     def do_exit(self, arg):
         """Exit"""
@@ -212,7 +206,8 @@ class DebugCmd(BaseCmd):
 
     help_s = help_selenium
 
-    def complete_selenium(self, text, line, begidx, endidx):
+    def complete_selenium(self, text, line, begin_idx, end_idx):
+        """complete selenium command"""
         webdrivers = ['firefox',
                       'chrome',
                       'ie',
@@ -283,7 +278,8 @@ class DebugCmd(BaseCmd):
 
     help_k = help_keywords
 
-    def complete_keywords(self, text, line, begidx, endidx):
+    def complete_keywords(self, text, line, begin_idx, end_idx):
+        """complete keywords command"""
         if len(line.split()) == 2:
             command, lib_name = line.split()
             return match_libs(lib_name)
@@ -373,13 +369,8 @@ REPL
     source.flush()
 
     args = '-l None -x None -o None -L None -r None ' + source.name
-    import robot
-    try:
-        from robot import run_cli
-        rc = run_cli(args.split())
-    except ImportError:
-        import robot.runner
-        rc = robot.run_from_cli(args.split(), robot.runner.__doc__)
+    from robot import run_cli
+    rc = run_cli(args.split())
 
     source.close()
     if os.path.exists(source.name):
