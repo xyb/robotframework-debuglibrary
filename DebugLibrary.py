@@ -31,9 +31,9 @@ $ python DebugLibrary.py
 <  ${secs} = 1474814470
 > Log to console  ${secs}
 1474814470
-> selenium  https://www.google.com  chrome
+> selenium  google.com  chrome
 import library  Selenium2Library
-open browser  https://www.google.com  chrome
+open browser  http://google.com  chrome
 > close all browsers
 > Ctrl-D
 >>>>> Exit shell.
@@ -48,7 +48,10 @@ import sys
 
 from robot.api import logger
 from robot.errors import ExecutionFailed, HandlerExecutionFailed
+from robot.libdocpkg.robotbuilder import LibraryDocBuilder
+from robot.libraries import STDLIBS
 from robot.libraries.BuiltIn import BuiltIn
+from robot.running.namespace import IMPORTER
 from robot.variables import is_var
 
 try:
@@ -117,7 +120,6 @@ class BaseCmd(cmd.Cmd):
 
 def get_libs():
     """get libraries robotframework imported"""
-    from robot.running.namespace import IMPORTER
     return sorted(IMPORTER._library_cache._items, key=lambda _: _.name)
 
 
@@ -240,7 +242,6 @@ class DebugCmd(BaseCmd):
             if '-s' in args:
                 print('       {}'.format(lib.source))
         print('< Bultin libraries:')
-        from robot.libraries import STDLIBS
         for name in sorted(list(STDLIBS)):
             print('   ', name)
 
@@ -256,7 +257,6 @@ class DebugCmd(BaseCmd):
 
     def do_keywords(self, args):
         """Print keywords of RobotFramework libraries."""
-        from robot.libdocpkg.robotbuilder import LibraryDocBuilder
         lib_name = args
         matched = match_libs(lib_name)
         if not matched:
