@@ -52,7 +52,9 @@ from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.interface import AbortAction
-from prompt_toolkit.shortcuts import prompt
+from prompt_toolkit.shortcuts import print_tokens, prompt
+from prompt_toolkit.styles import style_from_dict
+from pygments.token import Token
 
 from robot.api import logger
 from robot.errors import ExecutionFailed, HandlerExecutionFailed
@@ -167,6 +169,29 @@ def get_keywords():
         for keyword in get_lib_keywords(lib.name):
             yield keyword
 
+NORMAL_STYLE = style_from_dict({
+    Token.Head: '#00FF00',
+    Token.Message: '#CCCCCC',
+})
+
+ERROR_STYLE = style_from_dict({
+    Token.Head: '#FF0000',
+    Token.Message: '#FFFFFF',
+})
+
+
+def print_output(head, message, style=NORMAL_STYLE):
+    tokens = [
+        (Token.Head, head + ' '),
+        (Token.Message, message),
+        (Token, '\n'),
+    ]
+    print_tokens(tokens, style=style)
+
+
+def print_error(head, message, style=ERROR_STYLE):
+    print_output(head, message, style=style)
+
 
 def run_keyword(bi, command):
     """Run a keyword in robotframewrk environment"""
@@ -189,16 +214,17 @@ def run_keyword(bi, command):
         else:
             result = bi.run_keyword(*keyword)
             if result:
-                print('< ', repr(result))
+                #print('< ', repr(result))
+                print_output('<', repr(result))
     except ExecutionFailed as exc:
-        print('< keyword: %s' % command)
-        print('! %s' % exc.message)
+        print_error('< keyword:', command)
+        print_error('!', exc.message)
     except HandlerExecutionFailed as exc:
-        print('< keyword: %s' % command)
-        print('! %s' % exc.full_message)
+        print_error('< keyword:', command)
+        print_error('!', exc.full_message)
     except Exception as exc:
-        print('< keyword: %s' % command)
-        print('! FAILED: %s' % repr(exc))
+        print_error('< keyword:', command)
+        print_error('! FAILED:', repr(exc))
 
 
 class CmdCompleter(Completer):
@@ -236,6 +262,10 @@ class PtkCmd(BaseCmd):
 
     """CMD shell using prompt-toolkit"""
 
+    prompt = u'> '
+    get_prompt_tokens = None
+    prompt_style = None
+
     def __init__(self, completekey='tab', stdin=None, stdout=None):
         BaseCmd.__init__(self, completekey, stdin, stdout)
         self.history = InMemoryHistory()
@@ -272,14 +302,20 @@ class PtkCmd(BaseCmd):
             if self.cmdqueue:
                 line = self.cmdqueue.pop(0)
             else:
+                kwargs = dict(history=self.history,
+                              auto_suggest=AutoSuggestFromHistory(),
+                              enable_history_search=True,
+                              completer=self.get_completer(),
+                              display_completions_in_columns=True,
+                              on_abort=AbortAction.RETRY)
+                if self.get_prompt_tokens:
+                    kwargs['get_prompt_tokens'] = self.get_prompt_tokens
+                    kwargs['style'] = self.prompt_style
+                    prompt_str = u''
+                else:
+                    prompt_str = self.prompt
                 try:
-                    line = prompt(self.prompt,
-                                  history=self.history,
-                                  auto_suggest=AutoSuggestFromHistory(),
-                                  enable_history_search=True,
-                                  completer=self.get_completer(),
-                                  display_completions_in_columns=True,
-                                  on_abort=AbortAction.RETRY)
+                    line = prompt(prompt_str, **kwargs)
                 except EOFError:
                     line = 'EOF'
             line = self.precmd(line)
@@ -288,12 +324,18 @@ class PtkCmd(BaseCmd):
         self.postloop()
 
 
+def get_prompt_tokens(_, cli):
+    return [
+        (Token.Prompt, u'> '),
+    ]
+
+
 class DebugCmd(PtkCmd):
 
     """Interactive debug shell"""
 
-    use_rawinput = True
-    prompt = u'> '
+    get_prompt_tokens = get_prompt_tokens
+    prompt_style = style_from_dict({Token.Prompt: '#0000FF'})
 
     def __init__(self, completekey='tab', stdin=None, stdout=None):
         PtkCmd.__init__(self, completekey, stdin, stdout)
@@ -392,16 +434,16 @@ class DebugCmd(PtkCmd):
 
     def do_libs(self, args):
         """Print libraries robotframework imported and builtin."""
-        print('< Imported libraries:')
+        print_output('<', 'Imported libraries:')
         for lib in get_libs():
-            print('   {0} {1}'.format(lib.name, lib.version))
+            print_output('   {0}'.format(lib.name), lib.version)
             if lib.doc:
                 print('       {}'.format(lib.doc.split('\n')[0]))
             if '-s' in args:
                 print('       {}'.format(lib.source))
-        print('< Bultin libraries:')
+        print_output('<', 'Bultin libraries:')
         for name in sorted(list(STDLIBS)):
-            print('   ', name)
+            print_output('   ' + name, '')
 
     do_l = do_libs
 
@@ -418,14 +460,13 @@ class DebugCmd(PtkCmd):
         lib_name = args
         matched = match_libs(lib_name)
         if not matched:
-            print('< not found library', lib_name)
+            print_error('< not found library', lib_name)
             return
         for name in matched:
-            print('< Keywords of library', name)
-            lib = LibraryDocBuilder().build(name)
-            for keyword in lib.keywords:
-                print('   {0:<12s}\t{1}'.format(keyword.name,
-                                                keyword.doc.split('\n')[0]))
+            print_output('< Keywords of library', name)
+            for keyword in get_lib_keywords(name):
+                print_output('   {}\t'.format(keyword['name']),
+                             keyword['doc'])
 
     do_k = do_keywords
 
@@ -465,11 +506,12 @@ class DebugLibrary(object):
         # support
         old_stdout = sys.stdout
         sys.stdout = sys.__stdout__
-        print('\n>>>>> Enter interactive shell, only accepted plain text '
-              'format keyword.')
+        print_output('\n>>>>>',
+                     'Enter interactive shell, only accepted plain text '
+                     'format keyword.')
         debug_cmd = DebugCmd()
         debug_cmd.cmdloop()
-        print('\n>>>>> Exit shell.')
+        print_output('\n>>>>>', 'Exit shell.')
         # put stdout back where it was
         sys.stdout = old_stdout
 
