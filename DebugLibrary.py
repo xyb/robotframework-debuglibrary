@@ -49,7 +49,6 @@ from functools import wraps
 
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion
-from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.interface import AbortAction
 from prompt_toolkit.shortcuts import print_tokens, prompt
@@ -82,9 +81,23 @@ def get_command_line_encoding():
 COMMAND_LINE_ENCODING = get_command_line_encoding()
 
 
-class BaseCmd(cmd.Cmd):
+class HelpMeta(type):
+
+    def __init__(cls, name, bases, attrs):
+        for key, value in attrs.items():
+            if key.startswith('do_') and hasattr(value, '__call__'):
+                def auto_help(self):
+                    print(self.get_help_string(key))
+                attrs['help_' + key] = help  # assign help method
+
+        type.__init__(cls, name, bases, attrs)
+
+
+class BaseCmd(cmd.Cmd, object):
 
     """Basic REPL tool"""
+
+    __metaclass__ = HelpMeta
 
     def emptyline(self):
         """By default Cmd runs last command if an empty line is entered.
@@ -93,18 +106,11 @@ class BaseCmd(cmd.Cmd):
         pass
 
     def do_exit(self, arg):
-        """Exit"""
+        """Exit the interpreter. You can also use the Ctrl-D shortcut."""
 
         return True
 
-    def help_exit(self):
-        """Help of Exit command"""
-
-        print('Exit the interpreter.')
-        print('You can also use the Ctrl-D shortcut.')
-
     do_EOF = do_exit
-    help_EOF = help_exit
 
     def help_help(self):
         """Help of Help command"""
@@ -112,15 +118,10 @@ class BaseCmd(cmd.Cmd):
         print('Show help message.')
 
     def do_pdb(self, arg):
-        """Run python debugger pdb"""
+        """Enter the python debuger pdb. For development only."""
         print('break into python debugger: pdb')
         import pdb
         pdb.set_trace()
-
-    def help_pdb(self):
-        """Help of pdb command"""
-        print('pdb')
-        print('Enter the python debuger pdb. For development only.')
 
 
 def get_libs():
@@ -210,20 +211,20 @@ def run_keyword(bi, command):
             variable_value = bi.run_keyword(*keyword[1:])
             bi._variables.__setitem__(variable_name,
                                       variable_value)
-            print('< ', variable_name, '=', repr(variable_value))
+            print_output('#',
+                         '{} = {!r}'.format(variable_name, variable_value))
         else:
             result = bi.run_keyword(*keyword)
             if result:
-                #print('< ', repr(result))
                 print_output('<', repr(result))
     except ExecutionFailed as exc:
-        print_error('< keyword:', command)
+        print_error('! keyword:', command)
         print_error('!', exc.message)
     except HandlerExecutionFailed as exc:
-        print_error('< keyword:', command)
+        print_error('! keyword:', command)
         print_error('!', exc.full_message)
     except Exception as exc:
-        print_error('< keyword:', command)
+        print_error('! keyword:', command)
         print_error('! FAILED:', repr(exc))
 
 
@@ -231,7 +232,7 @@ class CmdCompleter(Completer):
 
     """Completer for debug shell"""
 
-    def __init__(self, commands):
+    def __init__(self, commands, cmd_repl=None):
         self.names = []
         self.displays = {}
         self.display_metas = {}
@@ -239,10 +240,36 @@ class CmdCompleter(Completer):
             self.names.append(name)
             self.displays[name] = display
             self.display_metas[name] = display_meta
+        self.cmd_repl = cmd_repl
+
+    def get_argument_completions(self, completer, document):
+        """Call Cmd.py's completer arguments to complete arguments"""
+        endidx = document.cursor_position_col
+        line = document.current_line
+        begidx = (line[:endidx].rfind(' ') + 1
+                  if line[:endidx].rfind(' ') >= 0 else 0)
+        prefix = line[begidx:endidx]
+
+        completions = completer(prefix,
+                                line,
+                                begidx,
+                                endidx)
+        for comp in completions:
+            yield Completion(comp, begidx - endidx, display=comp)
 
     def get_completions(self, document, complete_event):
         """Compute suggestions"""
         text = document.text_before_cursor.lower()
+        parts = KEYWORD_SEP.split(text)
+
+        if len(parts) >= 2:
+            cmd_name = parts[0].strip()
+            completer = getattr(self.cmd_repl, 'complete_' + cmd_name, None)
+            if completer:
+                for c in self.get_argument_completions(completer, document):
+                    yield c
+            return
+
         for name in self.names:
             library_level = '.' in name and '.' in text
             root_level = '.' not in name and '.' not in text
@@ -265,6 +292,10 @@ class PtkCmd(BaseCmd):
     prompt = u'> '
     get_prompt_tokens = None
     prompt_style = None
+    intro = '''\
+Only accepted plain text format keyword seperated with two or more spaces.
+Type "help" for more information.\
+'''
 
     def __init__(self, completekey='tab', stdin=None, stdout=None):
         BaseCmd.__init__(self, completekey, stdin, stdout)
@@ -276,15 +307,20 @@ class PtkCmd(BaseCmd):
         cut = len(pre)
         return [_[cut:] for _ in self.get_names() if _.startswith(pre)]
 
-    def get_completer_words(self):
-        """Get command name suggestion list"""
-        return self.get_cmd_names()
+    def get_help_string(self, command_name):
+        func = getattr(self, 'do_' + command_name, None)
+        if not func:
+            return ''
+        return func.__doc__
+
+    def get_helps(self):
+        return [(name, self.get_help_string(name) or name)
+                for name in self.get_cmd_names()]
 
     def get_completer(self):
         """Get completer instance"""
-        words = self.get_completer_words()
-        commands = [(cmd_name, '', '') for cmd_name in words]
-        cmd_completer = CmdCompleter(commands)
+        commands = [(name, '', doc) for name, doc in self.get_helps()]
+        cmd_completer = CmdCompleter(commands, self)
         return cmd_completer
 
     def cmdloop(self, intro=None):
@@ -324,7 +360,7 @@ class PtkCmd(BaseCmd):
         self.postloop()
 
 
-def get_prompt_tokens(_, cli):
+def get_prompt_tokens(self, cli):
     return [
         (Token.Prompt, u'> '),
     ]
@@ -332,7 +368,7 @@ def get_prompt_tokens(_, cli):
 
 class DebugCmd(PtkCmd):
 
-    """Interactive debug shell"""
+    """Interactive debug shell for robotframework"""
 
     get_prompt_tokens = get_prompt_tokens
     prompt_style = style_from_dict({Token.Prompt: '#0000FF'})
@@ -345,14 +381,24 @@ class DebugCmd(PtkCmd):
         """Run after a command"""
         return stop
 
+    def do_help(self, arg):
+        """Show help message."""
+        if not arg.strip():
+            print('''\
+Input Robotframework keywords, or commands listed below.
+Use "libs" or "l" to see available libraries,
+use "keywords" or "k" see list of library keywords.\
+''')
+
+        PtkCmd.do_help(self, arg)
+
     def get_completer(self):
         """Get completer instance specified for robotframework"""
         # commands
-        words = self.get_cmd_names()
         commands = [(cmd_name,
                      cmd_name,
-                     'DEBUG command: {0}'.format(cmd_name))
-                    for cmd_name in words]
+                     'DEBUG command: {0}'.format(doc))
+                    for cmd_name, doc in self.get_helps()]
 
         # libraries
         for lib in get_libs():
@@ -373,13 +419,19 @@ class DebugCmd(PtkCmd):
                              'Keyword[{0}.]: {1}'.format(keyword['lib'],
                                                          keyword['doc'])))
 
-        cmd_completer = CmdCompleter(commands)
+        cmd_completer = CmdCompleter(commands, self)
         return cmd_completer
 
     def do_selenium(self, arg):
-        """Initialized selenium environment, a shortcut for web test"""
+        """Start a selenium 2 webdriver and open url in browser you expect.
+
+        s(elenium)  [<url>]  [<browser>]
+
+        default url is google.com, default browser is firefox.
+        """
 
         command = 'import library  Selenium2Library'
+        print_output('#', command)
         run_keyword(self.rf_bi, command)
 
         # Set defaults, overriden if args set
@@ -395,18 +447,10 @@ class DebugCmd(PtkCmd):
             url = 'http://' + url
 
         command = 'open browser  %s  %s' % (url, browser)
-        print(command)
+        print_output('#', command)
         run_keyword(self.rf_bi, command)
 
     do_s = do_selenium
-
-    def help_selenium(self):
-        """Help of Selenium command"""
-        print('s(elenium)  [<url>]  [<browser>]')
-        print('Start a selenium 2 webdriver and open google.com '
-              'or other url in firefox or other browser you expect.')
-
-    help_s = help_selenium
 
     def complete_selenium(self, text, line, begin_idx, end_idx):
         """complete selenium command"""
@@ -419,7 +463,7 @@ class DebugCmd(PtkCmd):
                       'remote']
         if len(line.split()) == 3:
             command, url, driver_name = line.lower().split()
-            return [s for s in webdrivers if s.startswith(driver_name)]
+            return [d for d in webdrivers if d.startswith(driver_name)]
         elif len(line.split()) == 2 and line.endswith(' '):
             return webdrivers
         return []
@@ -433,10 +477,13 @@ class DebugCmd(PtkCmd):
         run_keyword(self.rf_bi, command)
 
     def do_libs(self, args):
-        """Print libraries robotframework imported and builtin."""
+        """Print imported and builtin libraries, with source if `-s` specified.
+
+        l(ibs) [-s]
+        """
         print_output('<', 'Imported libraries:')
         for lib in get_libs():
-            print_output('   {0}'.format(lib.name), lib.version)
+            print_output('   {}'.format(lib.name), lib.version)
             if lib.doc:
                 print('       {}'.format(lib.doc.split('\n')[0]))
             if '-s' in args:
@@ -447,16 +494,19 @@ class DebugCmd(PtkCmd):
 
     do_l = do_libs
 
-    def help_libs(self):
-        """Help of libs command"""
-        print('l(ibs) [-s]')
-        print('Print imported and builtin libraries, with source path')
-        print('if `-s` specified.')
+    def complete_libs(self, text, line, begin_idx, end_idx):
+        """complete libs command"""
+        if len(line.split()) == 1 and line.endswith(' '):
+            return ['-s']
+        return []
 
-    help_l = help_libs
+    complete_l = complete_libs
 
     def do_keywords(self, args):
-        """Print keywords of RobotFramework libraries."""
+        """Print keywords of libraries, all or starts with <lib_name>
+
+        k(eywords) [<lib_name>]
+        """
         lib_name = args
         matched = match_libs(lib_name)
         if not matched:
@@ -469,13 +519,6 @@ class DebugCmd(PtkCmd):
                              keyword['doc'])
 
     do_k = do_keywords
-
-    def help_keywords(self):
-        """Help of keywords command"""
-        print('k(eywords) [<lib_name>]')
-        print('Print keywords of libraries, all or starts with <lib_name>')
-
-    help_k = help_keywords
 
     def complete_keywords(self, text, line, begin_idx, end_idx):
         """complete keywords command"""
@@ -506,9 +549,7 @@ class DebugLibrary(object):
         # support
         old_stdout = sys.stdout
         sys.stdout = sys.__stdout__
-        print_output('\n>>>>>',
-                     'Enter interactive shell, only accepted plain text '
-                     'format keyword.')
+        print_output('\n>>>>>', 'Enter interactive shell')
         debug_cmd = DebugCmd()
         debug_cmd.cmdloop()
         print_output('\n>>>>>', 'Exit shell.')
