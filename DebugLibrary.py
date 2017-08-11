@@ -49,7 +49,7 @@ from functools import wraps
 
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion
-from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.history import FileHistory
 from prompt_toolkit.interface import AbortAction
 from prompt_toolkit.shortcuts import print_tokens, prompt
 from prompt_toolkit.styles import style_from_dict
@@ -65,6 +65,7 @@ from robot.variables import is_var
 
 __version__ = '0.9.1'
 
+HISTORY_PATH = os.environ.get('RFDEBUG_HISTORY', '~/.rfdebug_history')
 KEYWORD_SEP = re.compile('  +|\t')
 
 
@@ -299,7 +300,7 @@ Type "help" for more information.\
 
     def __init__(self, completekey='tab', stdin=None, stdout=None):
         BaseCmd.__init__(self, completekey, stdin, stdout)
-        self.history = InMemoryHistory()
+        self.history = FileHistory(os.path.expanduser(HISTORY_PATH))
 
     def get_cmd_names(self):
         """Get all command names of CMD shell"""

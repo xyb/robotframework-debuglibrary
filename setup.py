@@ -48,6 +48,7 @@ setup(
     entry_points={
         'console_scripts': [
             'rfshell = DebugLibrary:shell',
+            'rfdebug = DebugLibrary:shell',
         ],
     },
     zip_safe=False,
