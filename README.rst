@@ -7,7 +7,7 @@ Debug Library for Robot Framework
 Introduction
 ------------
 
-Robotframework-DebugLibrary is A debug library for `RobotFramework`_,
+Robotframework-DebugLibrary is a debug library for `RobotFramework`_,
 which can be used as an interactive shell(REPL) also.
 
 .. _`RobotFramework`: http://robotframework.org/
@@ -15,16 +15,10 @@ which can be used as an interactive shell(REPL) also.
 Installation
 ------------
 
-Installation is done just as for any other Python library.
-Using the ``pip`` or ``easy_install`` command from setuptools is the easiest.
-
 To install using ``pip``::
 
     pip install robotframework-debuglibrary
 
-To install using ``easy_install``::
-
-    easy_install robotframework-debuglibrary
 
 Usage
 -----
@@ -42,35 +36,52 @@ keyword in your test files like this::
 
 Or you can run it standalone as a ``RobotFramework`` shell::
 
-    $ rfshell
+    $ rfdebug
     [...snap...]
     >>>>> Enter interactive shell, only accepted plain text format keyword.
+    > help
+    Input Robotframework keywords, or commands listed below.
+    Use "libs" or "l" to see available libraries,
+    use "keywords" or "k" see list of library keywords.
+
+    Documented commands (type help <topic>):
+    ========================================
+    EOF  exit  help  k  keywords  l  libs  pdb  s  selenium
+
     > log  hello
     > get time
-    <  '2011-10-13 18:50:31'
+    < '2011-10-13 18:50:31'
     > import library  String
     > get substring  helloworld  5  8
     < 'wor'
     > ${secs} =  Get Time  epoch
-    <  ${secs} = 1474814470
+    # ${secs} = 1474814470
     > Log to console  ${secs}
     1474814470
     > @{list} =  Create List    hello    world
-    <  @{list} = [u'hello', u'world']
+    # @{list} = ['hello', 'world']
     > Log to console  ${list}
-    [u'hello', u'world']
+    ['hello', 'world']
     > &{dict} =  Create Dictionary    name=admin    email=admin@test.local
-    <  &{dict} = {u'name': u'admin', u'email': u'admin@test.local'}
+    # &{dict} = {'name': 'admin', 'email': 'admin@test.local'}
     > Log  ${dict.name}
     > help selenium
-    s(elenium)  [<url>]  [<browser>]
-    Start a selenium 2 webdriver and open google.com or other url in firefox or other browser you expect.
+    Start a selenium 2 webdriver and open url in browser you expect.
+
+            s(elenium)  [<url>]  [<browser>]
+
+            default url is google.com, default browser is firefox.
     > selenium  google.com  chrome
-    import library  Selenium2Library
-    open browser  http://google.com/  chrome
+    # import library  Selenium2Library
+    # open browser  http://google.com  chrome
+    < 1
     > close all browsers
     > Ctrl-D
     >>>>> Exit shell.
+
+The interactive shell support auto completion for robotframework keywords and
+commands. The history will save at `~/.rfdebug_history` default, or any file
+defined in environment variable `RFDEBUG_HISTORY`.
 
 Submitting issues
 -----------------

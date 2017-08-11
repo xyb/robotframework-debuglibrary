@@ -1,3 +1,10 @@
+2017-08-11  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * use python-prompt-toolkit to handle prompt with color support
+    * auto completion for robotframework keywords and debug shell commands
+    * save history to file
+    * rename shell script rfshell to rfdebug
+
 2017-08-03  Xie Yanbo  <xieyanbo@gmail.com>
 
     * fix sys.stdout.encoding error

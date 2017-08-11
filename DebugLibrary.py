@@ -20,20 +20,23 @@ SOME TEST
 Run standalone:
 $ python DebugLibrary.py
 [...snap...]
->>>>> Enter interactive shell, only accepted plain text format keyword.
+>>>>> Enter interactive shell
+Only accepted plain text format keyword seperated with two or more spaces.
+Type "help" for more information.
 > log  hello
 > get time
-<  '2016-07-20 11:51:33'
+< '2016-07-20 11:51:33'
 > import library  String
 > get substring  helloworld  5  8
 < 'wor'
 > ${secs} =  Get Time  epoch
-<  ${secs} = 1474814470
+# ${secs} = 1474814470
 > Log to console  ${secs}
 1474814470
 > selenium  google.com  chrome
-import library  Selenium2Library
-open browser  http://google.com  chrome
+# import library  Selenium2Library
+# open browser  http://google.com  chrome
+< 1
 > close all browsers
 > Ctrl-D
 >>>>> Exit shell.
@@ -183,6 +186,7 @@ ERROR_STYLE = style_from_dict({
 
 
 def print_output(head, message, style=NORMAL_STYLE):
+    """Print prompt-toolkit tokens to output"""
     tokens = [
         (Token.Head, head + ' '),
         (Token.Message, message),
@@ -192,6 +196,7 @@ def print_output(head, message, style=NORMAL_STYLE):
 
 
 def print_error(head, message, style=ERROR_STYLE):
+    """Print to output with error style"""
     print_output(head, message, style=style)
 
 
@@ -244,7 +249,7 @@ class CmdCompleter(Completer):
         self.cmd_repl = cmd_repl
 
     def get_argument_completions(self, completer, document):
-        """Call Cmd.py's completer arguments to complete arguments"""
+        """Using Cmd.py's completer to complete arguments"""
         endidx = document.cursor_position_col
         line = document.current_line
         begidx = (line[:endidx].rfind(' ') + 1
@@ -309,12 +314,14 @@ Type "help" for more information.\
         return [_[cut:] for _ in self.get_names() if _.startswith(pre)]
 
     def get_help_string(self, command_name):
+        """Get help document of command"""
         func = getattr(self, 'do_' + command_name, None)
         if not func:
             return ''
         return func.__doc__
 
     def get_helps(self):
+        """Get all help documents of commands"""
         return [(name, self.get_help_string(name) or name)
                 for name in self.get_cmd_names()]
 
@@ -362,6 +369,7 @@ Type "help" for more information.\
 
 
 def get_prompt_tokens(self, cli):
+    """Print prompt-toolkit prompt"""
     return [
         (Token.Prompt, u'> '),
     ]
@@ -605,7 +613,7 @@ def shell():
 Library  DebugLibrary
 
 ** test case **
-REPL
+RFDEBUG REPL
     debug
 ''')
     source.flush()
