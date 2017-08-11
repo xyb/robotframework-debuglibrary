@@ -66,7 +66,7 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.running.namespace import IMPORTER
 from robot.variables import is_var
 
-__version__ = '0.9.1'
+__version__ = '1.0.0'
 
 HISTORY_PATH = os.environ.get('RFDEBUG_HISTORY', '~/.rfdebug_history')
 KEYWORD_SEP = re.compile('  +|\t')

@@ -4,6 +4,7 @@
     * auto completion for robotframework keywords and debug shell commands
     * save history to file
     * rename shell script rfshell to rfdebug
+    * release version 1.0.0
 
 2017-08-03  Xie Yanbo  <xieyanbo@gmail.com>
 
