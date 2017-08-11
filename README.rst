@@ -80,8 +80,8 @@ Or you can run it standalone as a ``RobotFramework`` shell::
     >>>>> Exit shell.
 
 The interactive shell support auto completion for robotframework keywords and
-commands. The history will save at `~/.rfdebug_history` default, or any file
-defined in environment variable `RFDEBUG_HISTORY`.
+commands. The history will save at ``~/.rfdebug_history`` default, or any file
+defined in environment variable ``RFDEBUG_HISTORY``.
 
 Submitting issues
 -----------------
