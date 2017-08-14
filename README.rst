@@ -42,7 +42,8 @@ Or you can run it standalone as a ``RobotFramework`` shell::
     > help
     Input Robotframework keywords, or commands listed below.
     Use "libs" or "l" to see available libraries,
-    use "keywords" or "k" see list of library keywords.
+    use "keywords" or "k" to see list of library keywords,
+    use the TAB keyboard key to auto complete keywords.
 
     Documented commands (type help <topic>):
     ========================================

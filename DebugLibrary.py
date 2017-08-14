@@ -396,7 +396,8 @@ class DebugCmd(PtkCmd):
             print('''\
 Input Robotframework keywords, or commands listed below.
 Use "libs" or "l" to see available libraries,
-use "keywords" or "k" see list of library keywords.\
+use "keywords" or "k" see list of library keywords,
+use the TAB keyboard key to auto complete keywords.\
 ''')
 
         PtkCmd.do_help(self, arg)
