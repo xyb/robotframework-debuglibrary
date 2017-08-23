@@ -15,7 +15,7 @@ install_requires = ['prompt-toolkit', 'pygments']
 if PY3:
     install_requires.append('robotframework >= 3.0')
 else:
-    install_requires.append('robotframework >= 2.8')
+    install_requires.append('robotframework >= 2.9')
 
 
 def read(*names, **kwargs):
