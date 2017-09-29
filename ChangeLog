@@ -1,3 +1,8 @@
+2017-09-29  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * support keyword document including non-ASCII characters
+    * release version 1.0.2
+
 2017-08-23  Xie Yanbo  <xieyanbo@gmail.com>
 
     * change the minimum requirement of robotframework to version 2.9
