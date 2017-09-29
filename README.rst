@@ -42,8 +42,8 @@ Or you can run it standalone as a ``RobotFramework`` shell::
     > help
     Input Robotframework keywords, or commands listed below.
     Use "libs" or "l" to see available libraries,
-    use "keywords" or "k" to see list of library keywords,
-    use the TAB keyboard key to auto complete keywords.
+    use "keywords" or "k" to see the list of library keywords,
+    use the TAB keyboard key to autocomplete keywords.
 
     Documented commands (type help <topic>):
     ========================================
@@ -52,6 +52,8 @@ Or you can run it standalone as a ``RobotFramework`` shell::
     > log  hello
     > get time
     < '2011-10-13 18:50:31'
+    > BuiltIn.Get Time
+    < '2011-10-13 18:50:39'
     > import library  String
     > get substring  helloworld  5  8
     < 'wor'
@@ -80,9 +82,15 @@ Or you can run it standalone as a ``RobotFramework`` shell::
     > Ctrl-D
     >>>>> Exit shell.
 
-The interactive shell support auto completion for robotframework keywords and
-commands. The history will save at ``~/.rfdebug_history`` default, or any file
+The interactive shell support auto-completion for robotframework keywords and
+commands. Try input ``BuiltIn.`` then type ``<TAB>`` key to feeling it.
+The history will save at ``~/.rfdebug_history`` default or any file
 defined in environment variable ``RFDEBUG_HISTORY``.
+
+In case you don't remember the name of keyword during using ``rfdebug``,
+there are commands ``libs`` or ``l`` to list the imported libraries and
+built-in libraries, and ``keywords <lib name>`` or ``k`` to list
+keywords of a library.
 
 Submitting issues
 -----------------
