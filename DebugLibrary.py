@@ -499,7 +499,7 @@ use the TAB keyboard key to auto complete keywords.\
                 print('       {}'.format(lib.doc.split('\n')[0]))
             if '-s' in args:
                 print('       {}'.format(lib.source))
-        print_output('<', 'Bultin libraries:')
+        print_output('<', 'Builtin libraries:')
         for name in sorted(list(STDLIBS)):
             print_output('   ' + name, '')
 
