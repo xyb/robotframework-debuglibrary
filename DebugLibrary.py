@@ -174,6 +174,7 @@ def get_keywords():
         for keyword in get_lib_keywords(lib.name):
             yield keyword
 
+
 NORMAL_STYLE = style_from_dict({
     Token.Head: '#00FF00',
     Token.Message: '#CCCCCC',
@@ -422,12 +423,12 @@ use the TAB keyboard key to auto complete keywords.\
             name = keyword['lib'] + '.' + keyword['name']
             commands.append((name,
                              keyword['name'],
-                             'Keyword: {0}'.format(keyword['doc'])))
+                             u'Keyword: {0}'.format(keyword['doc'])))
             # name without library
             commands.append((keyword['name'],
                              keyword['name'],
-                             'Keyword[{0}.]: {1}'.format(keyword['lib'],
-                                                         keyword['doc'])))
+                             u'Keyword[{0}.]: {1}'.format(keyword['lib'],
+                                                          keyword['doc'])))
 
         cmd_completer = CmdCompleter(commands, self)
         return cmd_completer
