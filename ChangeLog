@@ -1,3 +1,8 @@
+2018-01-23  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * support import library with arguments
+    * release version 1.0.3
+
 2017-09-29  Xie Yanbo  <xieyanbo@gmail.com>
 
     * support keyword document including non-ASCII characters
