@@ -60,7 +60,8 @@ from pygments.token import Token
 
 from robot.api import logger
 from robot.errors import ExecutionFailed, HandlerExecutionFailed
-from robot.libdocpkg.robotbuilder import LibraryDocBuilder
+from robot.libdocpkg.model import LibraryDoc
+from robot.libdocpkg.robotbuilder import KeywordDocBuilder, LibraryDocBuilder
 from robot.libraries import STDLIBS
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.namespace import IMPORTER
@@ -155,15 +156,26 @@ def memoize(function):
     return wrapper
 
 
+class ImportedLibraryDocBuilder(LibraryDocBuilder):
+
+    def build(self, lib):
+        libdoc = LibraryDoc(name=lib.name,
+                            doc=self._get_doc(lib),
+                            doc_format=lib.doc_format)
+        libdoc.inits = self._get_initializers(lib)
+        libdoc.keywords = KeywordDocBuilder().build_keywords(lib)
+        return libdoc
+
+
 @memoize
-def get_lib_keywords(lib_name):
-    """Get keywords of library lib_name"""
-    lib = LibraryDocBuilder().build(lib_name)
+def get_lib_keywords(library):
+    """Get keywords of imported library"""
+    lib = ImportedLibraryDocBuilder().build(library)
     keywords = []
     for keyword in lib.keywords:
         doc = keyword.doc.split('\n')[0]
         keywords.append({'name': keyword.name,
-                         'lib': lib_name,
+                         'lib': library.name,
                          'doc': doc})
     return keywords
 
@@ -171,7 +183,7 @@ def get_lib_keywords(lib_name):
 def get_keywords():
     """Get all keywords of libraries"""
     for lib in get_libs():
-        for keyword in get_lib_keywords(lib.name):
+        for keyword in get_lib_keywords(lib):
             yield keyword
 
 
