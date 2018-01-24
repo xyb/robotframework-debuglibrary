@@ -1,45 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Author: Xie Yanbo <xieyanbo@gmail.com>
-# Author: Louie Lu <louie.lu@hopebaytech.com>
 # This software is licensed under the New BSD License. See the LICENSE
 # file in the top distribution directory for the full license text.
 
-"""A debug library for RobotFramework, which can be used as an interactive
-shell(REPL) also.
-
-As a library:
-*** Settings ***
-Library         DebugLibrary
-
-** test case **
-SOME TEST
-    # some keywords...
-    Debug
-
-Run standalone:
-$ python DebugLibrary.py
-[...snap...]
->>>>> Enter interactive shell
-Only accepted plain text format keyword seperated with two or more spaces.
-Type "help" for more information.
-> log  hello
-> get time
-< '2016-07-20 11:51:33'
-> import library  String
-> get substring  helloworld  5  8
-< 'wor'
-> ${secs} =  Get Time  epoch
-# ${secs} = 1474814470
-> Log to console  ${secs}
-1474814470
-> selenium  google.com  chrome
-# import library  Selenium2Library
-# open browser  http://google.com  chrome
-< 1
-> close all browsers
-> Ctrl-D
->>>>> Exit shell.
+"""A debug library and REPL for RobotFramework.
 """
 
 from __future__ import print_function
@@ -216,37 +181,49 @@ def print_error(head, message, style=ERROR_STYLE):
     print_output(head, message, style=style)
 
 
+def parse_keyword(command):
+    unicode_command = ''
+    if sys.version_info > (3,):
+        unicode_command = command
+    else:
+        unicode_command = command.decode(COMMAND_LINE_ENCODING)
+    return KEYWORD_SEP.split(unicode_command)
+
+
+def assign_variable(bi, variable_name, args):
+    variable_value = bi.run_keyword(*args)
+    bi._variables.__setitem__(variable_name, variable_value)
+    return variable_value
+
+
 def run_keyword(bi, command):
     """Run a keyword in robotframewrk environment"""
     if not command:
         return
     try:
-        u_command = ''
-        if sys.version_info > (3,):
-            u_command = command
-        else:
-            u_command = command.decode(COMMAND_LINE_ENCODING)
-        keyword = KEYWORD_SEP.split(u_command)
+        keyword_args = parse_keyword(command)
+        keyword = keyword_args[0]
+        args = keyword_args[1:]
 
-        is_comment = keyword[0].strip().startswith('#')
+        is_comment = keyword.strip().startswith('#')
         if is_comment:
             return
 
-        variable_name = keyword[0].rstrip('= ')
+        variable_name = keyword.rstrip('= ')
         if is_var(variable_name):
-            variable_only = not keyword[1:]
+            variable_only = not args
             if variable_only:
-                print_value = ['Log to console'] + keyword
-                bi.run_keyword(*print_value)
+                display_value = ['Log to console', keyword]
+                bi.run_keyword(*display_value)
             else:
-                variable_value = bi.run_keyword(*keyword[1:])
-                bi._variables.__setitem__(variable_name,
-                                          variable_value)
+                variable_value = assign_variable(bi,
+                                                 variable_name,
+                                                 args)
                 print_output('#',
                              '{} = {!r}'.format(variable_name,
                                                 variable_value))
         else:
-            result = bi.run_keyword(*keyword)
+            result = bi.run_keyword(keyword, *args)
             if result:
                 print_output('<', repr(result))
     except ExecutionFailed as exc:
@@ -357,11 +334,8 @@ Type "help" for more information.\
         cmd_completer = CmdCompleter(commands, self)
         return cmd_completer
 
-    def reset_robotframework_exception(self):
-        if STOP_SIGNAL_MONITOR._signal_count:
-            STOP_SIGNAL_MONITOR._signal_count = 0
-            STOP_SIGNAL_MONITOR._running_keyword = True
-            logger.info('Reset last exception by DebugLibrary')
+    def pre_loop(self):
+        pass
 
     def cmdloop(self, intro=None):
         """Better command loop supported by prompt_toolkit
@@ -375,7 +349,7 @@ Type "help" for more information.\
 
         stop = None
         while not stop:
-            self.reset_robotframework_exception()
+            self.pre_loop()
             if self.cmdqueue:
                 line = self.cmdqueue.pop(0)
             else:
@@ -422,6 +396,15 @@ class DebugCmd(PtkCmd):
     def postcmd(self, stop, line):
         """Run after a command"""
         return stop
+
+    def reset_robotframework_exception(self):
+        if STOP_SIGNAL_MONITOR._signal_count:
+            STOP_SIGNAL_MONITOR._signal_count = 0
+            STOP_SIGNAL_MONITOR._running_keyword = True
+            logger.info('Reset last exception by DebugLibrary')
+
+    def pre_loop(self):
+        self.reset_robotframework_exception()
 
     def do_help(self, arg):
         """Show help message."""
@@ -639,28 +622,28 @@ DEBUG FROM CONSOLE
 def shell():
     """A standalone robotframework shell"""
 
-    # ceate test suite file for REPL.
-    source = tempfile.NamedTemporaryFile(prefix='robot_debug',
-                                         suffix='.txt', delete=False)
-    source.write(b'''*** Settings ***
+    test_suite = tempfile.NamedTemporaryFile(prefix='robot_debug',
+                                             suffix='.txt',
+                                             delete=False)
+    test_suite.write(b'''*** Settings ***
 Library  DebugLibrary
 
 ** test case **
 RFDEBUG REPL
     debug
 ''')
-    source.flush()
+    test_suite.flush()
 
     default_no_logs = '-l None -x None -o None -L None -r None'
     if len(sys.argv) > 1:
-        args = sys.argv[1:] + [source.name]
+        args = sys.argv[1:] + [test_suite.name]
     else:
-        args = default_no_logs.split() + [source.name]
+        args = default_no_logs.split() + [test_suite.name]
     rc = run_cli(args)
 
-    source.close()
-    if os.path.exists(source.name):
-        os.unlink(source.name)
+    test_suite.close()
+    if os.path.exists(test_suite.name):
+        os.unlink(test_suite.name)
     sys.exit(rc)
 
 
