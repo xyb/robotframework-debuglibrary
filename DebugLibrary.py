@@ -65,6 +65,7 @@ from robot.libdocpkg.robotbuilder import KeywordDocBuilder, LibraryDocBuilder
 from robot.libraries import STDLIBS
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running.namespace import IMPORTER
+from robot.running.signalhandler import STOP_SIGNAL_MONITOR
 from robot.variables import is_var
 
 __version__ = '1.0.3'
@@ -344,6 +345,12 @@ Type "help" for more information.\
         cmd_completer = CmdCompleter(commands, self)
         return cmd_completer
 
+    def reset_robotframework_exception(self):
+        if STOP_SIGNAL_MONITOR._signal_count:
+            STOP_SIGNAL_MONITOR._signal_count = 0
+            STOP_SIGNAL_MONITOR._running_keyword = True
+            logger.info('Reset last exception by DebugLibrary')
+
     def cmdloop(self, intro=None):
         """Better command loop supported by prompt_toolkit
 
@@ -356,6 +363,7 @@ Type "help" for more information.\
 
         stop = None
         while not stop:
+            self.reset_robotframework_exception()
             if self.cmdqueue:
                 line = self.cmdqueue.pop(0)
             else:
