@@ -52,13 +52,13 @@ Or you can run it standalone as a ``RobotFramework`` shell::
     > log  hello
     > get time
     < '2011-10-13 18:50:31'
-    # use TAB to auto complete commands
+    > # use TAB to auto complete commands
     > BuiltIn.Get Time
     < '2011-10-13 18:50:39'
     > import library  String
     > get substring  helloworld  5  8
     < 'wor'
-    # define variables as you wish
+    > # define variables as you wish
     > ${secs} =  Get Time  epoch
     # ${secs} = 1474814470
     > Log to console  ${secs}
@@ -75,7 +75,7 @@ Or you can run it standalone as a ``RobotFramework`` shell::
     [u'hello', u'world']
     > ${dict.name}
     admin
-    # start a selenium server quickly
+    > # start a selenium server quickly
     > help selenium
     Start a selenium 2 webdriver and open url in browser you expect.
 
