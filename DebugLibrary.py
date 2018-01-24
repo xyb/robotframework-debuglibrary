@@ -48,6 +48,7 @@ import cmd
 import os
 import re
 import sys
+import tempfile
 from functools import wraps
 
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
@@ -58,6 +59,7 @@ from prompt_toolkit.shortcuts import print_tokens, prompt
 from prompt_toolkit.styles import style_from_dict
 from pygments.token import Token
 
+from robot import run_cli
 from robot.api import logger
 from robot.errors import ExecutionFailed, HandlerExecutionFailed
 from robot.libdocpkg.model import LibraryDoc
@@ -627,7 +629,6 @@ DEBUG FROM CONSOLE
 def shell():
     """A standalone robotframework shell"""
 
-    import tempfile
     # ceate test suite file for REPL.
     source = tempfile.NamedTemporaryFile(prefix='robot_debug',
                                          suffix='.txt', delete=False)
@@ -640,9 +641,12 @@ RFDEBUG REPL
 ''')
     source.flush()
 
-    args = '-l None -x None -o None -L None -r None ' + source.name
-    from robot import run_cli
-    rc = run_cli(args.split())
+    default_no_logs = '-l None -x None -o None -L None -r None'
+    if len(sys.argv) > 1:
+        args = sys.argv[1:] + [source.name]
+    else:
+        args = default_no_logs.split() + [source.name]
+    rc = run_cli(args)
 
     source.close()
     if os.path.exists(source.name):

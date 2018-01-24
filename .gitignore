@@ -2,3 +2,6 @@
 build
 dist
 *.pyc
+log.html
+output.xml
+report.html
