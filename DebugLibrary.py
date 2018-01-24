@@ -230,11 +230,17 @@ def run_keyword(bi, command):
         variable_name = keyword[0].rstrip('= ')
 
         if is_var(variable_name):
-            variable_value = bi.run_keyword(*keyword[1:])
-            bi._variables.__setitem__(variable_name,
-                                      variable_value)
-            print_output('#',
-                         '{} = {!r}'.format(variable_name, variable_value))
+            variable_only = not keyword[1:]
+            if variable_only:
+                print_value = ['Log to console'] + keyword
+                bi.run_keyword(*print_value)
+            else:
+                variable_value = bi.run_keyword(*keyword[1:])
+                bi._variables.__setitem__(variable_name,
+                                          variable_value)
+                print_output('#',
+                             '{} = {!r}'.format(variable_name,
+                                                variable_value))
         else:
             result = bi.run_keyword(*keyword)
             if result:
