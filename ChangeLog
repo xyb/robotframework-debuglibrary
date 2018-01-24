@@ -1,3 +1,11 @@
+2018-01-24  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * support passing pybot's arguments, disabled all logs by default
+    * support press ctrl+c to interrupt running keywords
+    * support comment format of robotframework
+    * print value if input variable name only
+    * release version 1.1
+
 2018-01-23  Xie Yanbo  <xieyanbo@gmail.com>
 
     * support import library with arguments

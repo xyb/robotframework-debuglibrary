@@ -70,7 +70,7 @@ from robot.running.namespace import IMPORTER
 from robot.running.signalhandler import STOP_SIGNAL_MONITOR
 from robot.variables import is_var
 
-__version__ = '1.0.3'
+__version__ = '1.1'
 
 HISTORY_PATH = os.environ.get('RFDEBUG_HISTORY', '~/.rfdebug_history')
 KEYWORD_SEP = re.compile('  +|\t')
