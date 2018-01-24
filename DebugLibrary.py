@@ -227,8 +227,12 @@ def run_keyword(bi, command):
         else:
             u_command = command.decode(COMMAND_LINE_ENCODING)
         keyword = KEYWORD_SEP.split(u_command)
-        variable_name = keyword[0].rstrip('= ')
 
+        is_comment = keyword[0].strip().startswith('#')
+        if is_comment:
+            return
+
+        variable_name = keyword[0].rstrip('= ')
         if is_var(variable_name):
             variable_only = not keyword[1:]
             if variable_only:
