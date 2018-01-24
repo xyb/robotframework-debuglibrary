@@ -622,29 +622,26 @@ DEBUG FROM CONSOLE
 def shell():
     """A standalone robotframework shell"""
 
-    test_suite = tempfile.NamedTemporaryFile(prefix='robot_debug',
-                                             suffix='.txt',
-                                             delete=False)
-    test_suite.write(b'''*** Settings ***
+    with tempfile.NamedTemporaryFile(prefix='robot-debug-',
+                                     suffix='.txt',
+                                     delete=True) as test_file:
+        test_file.write(b'''*** Settings ***
 Library  DebugLibrary
 
 ** test case **
 RFDEBUG REPL
     debug
 ''')
-    test_suite.flush()
+        test_file.flush()
 
-    default_no_logs = '-l None -x None -o None -L None -r None'
-    if len(sys.argv) > 1:
-        args = sys.argv[1:] + [test_suite.name]
-    else:
-        args = default_no_logs.split() + [test_suite.name]
-    rc = run_cli(args)
+        default_no_logs = '-l None -x None -o None -L None -r None'
+        if len(sys.argv) > 1:
+            args = sys.argv[1:] + [test_file.name]
+        else:
+            args = default_no_logs.split() + [test_file.name]
+        rc = run_cli(args)
 
-    test_suite.close()
-    if os.path.exists(test_suite.name):
-        os.unlink(test_suite.name)
-    sys.exit(rc)
+        sys.exit(rc)
 
 
 if __name__ == '__main__':
