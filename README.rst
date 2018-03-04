@@ -77,13 +77,13 @@ Or you can run it standalone as a ``RobotFramework`` shell::
     admin
     > # start a selenium server quickly
     > help selenium
-    Start a selenium 2 webdriver and open url in browser you expect.
+    Start a selenium webdriver and open url in browser you expect.
 
             s(elenium)  [<url>]  [<browser>]
 
             default url is google.com, default browser is firefox.
     > selenium  google.com  chrome
-    # import library  Selenium2Library
+    # import library  SeleniumLibrary
     # open browser  http://google.com  chrome
     < 1
     > close all browsers
