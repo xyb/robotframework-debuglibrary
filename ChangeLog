@@ -1,3 +1,8 @@
+2018-03-04  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * selenium2library has been renamed to seleniumlibrary
+    * release version 1.1.1
+
 2018-01-24  Xie Yanbo  <xieyanbo@gmail.com>
 
     * support passing pybot's arguments, disabled all logs by default
