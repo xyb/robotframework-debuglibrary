@@ -449,14 +449,14 @@ use the TAB keyboard key to autocomplete keywords.\
         return cmd_completer
 
     def do_selenium(self, arg):
-        """Start a selenium 2 webdriver and open url in browser you expect.
+        """Start a selenium webdriver and open url in browser you expect.
 
         s(elenium)  [<url>]  [<browser>]
 
         default url is google.com, default browser is firefox.
         """
 
-        command = 'import library  Selenium2Library'
+        command = 'import library  SeleniumLibrary'
         print_output('#', command)
         run_keyword(self.rf_bi, command)
 
