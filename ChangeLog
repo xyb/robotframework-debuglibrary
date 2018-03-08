@@ -1,3 +1,8 @@
+2018-03-08  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * fix PermissionError when running rfdebug on Windows
+    * release version 1.1.2
+
 2018-03-04  Xie Yanbo  <xieyanbo@gmail.com>
 
     * selenium2library has been renamed to seleniumlibrary
