@@ -647,6 +647,7 @@ def shell():
 
             sys.exit(rc)
         finally:
+            test_file.close()
             # pybot will raise PermissionError on Windows NT or later
             # if NamedTemporaryFile called with `delete=True`,
             # deleting test file seperated will be OK.
