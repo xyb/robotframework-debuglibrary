@@ -5,3 +5,5 @@ dist
 log.html
 output.xml
 report.html
+.venv
+TODO
