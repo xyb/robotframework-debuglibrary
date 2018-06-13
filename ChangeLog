@@ -1,3 +1,8 @@
+2018-06-13  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * Prompt_toolkit 2.0 is not compatible with 1.0
+    * release version 1.1.3
+
 2018-03-08  Xie Yanbo  <xieyanbo@gmail.com>
 
     * fix PermissionError when running rfdebug on Windows
