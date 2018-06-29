@@ -102,6 +102,11 @@ def get_libs():
     return sorted(IMPORTER._library_cache._items, key=lambda _: _.name)
 
 
+def get_libs_as_dict():
+    """Get libraries robotframework imported as a name -> lib dict"""
+    return {l.name: l for l in IMPORTER._library_cache._items}
+
+
 def match_libs(name=''):
     """Find libraries by prefix of library name, default all"""
     libs = [_.name for _ in get_libs()]
@@ -538,9 +543,11 @@ use the TAB keyboard key to autocomplete keywords.\
         if not matched:
             print_error('< not found library', lib_name)
             return
+        libs = get_libs_as_dict()
         for name in matched:
+            lib = libs[name]
             print_output('< Keywords of library', name)
-            for keyword in get_lib_keywords(name):
+            for keyword in get_lib_keywords(lib):
                 print_output('   {}\t'.format(keyword['name']),
                              keyword['doc'])
 
