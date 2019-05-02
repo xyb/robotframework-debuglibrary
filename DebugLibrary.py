@@ -307,7 +307,7 @@ class PtkCmd(BaseCmd):
     get_prompt_tokens = None
     prompt_style = None
     intro = '''\
-Only accepted plain text format keyword seperated with two or more spaces.
+Only accepted plain text format keyword separated with two or more spaces.
 Type "help" for more information.\
 '''
 
@@ -575,7 +575,7 @@ class DebugLibrary(object):
     def debug(self):
         """Open a interactive shell, run any RobotFramework keywords.
 
-        Keywords seperated by two space or one tab, and Ctrl-D to exit.
+        Keywords separated by two space or one tab, and Ctrl-D to exit.
         """
 
         # re-wire stdout so that we can use the cmd module and have readline
