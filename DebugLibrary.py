@@ -141,12 +141,15 @@ class ImportedLibraryDocBuilder(LibraryDocBuilder):
 
 
 @memoize
-def get_lib_keywords(library):
+def get_lib_keywords(library, long_format=False):
     """Get keywords of imported library"""
     lib = ImportedLibraryDocBuilder().build(library)
     keywords = []
     for keyword in lib.keywords:
-        doc = keyword.doc.split('\n')[0]
+        if long_format:
+            doc = keyword.doc
+        else:
+            doc = keyword.doc.split('\n')[0]
         keywords.append({'name': keyword.name,
                          'lib': library.name,
                          'doc': doc})
@@ -564,6 +567,20 @@ use the TAB keyboard key to autocomplete keywords.\
 
     complete_k = complete_keywords
 
+    def do_docs(self, kw_name):
+        """Get keyword documentation for individual keywords
+
+         d(ocs) [<keyword_name>]
+        """
+
+        for lib in get_libs():
+            for keyword in get_lib_keywords(lib, True):
+                if keyword['name'].lower() == kw_name.lower():
+                    print(keyword['doc'])
+                    return
+        print("could not find documentation for keyword {}".format(kw_name))
+
+    do_d = do_docs
 
 class DebugLibrary(object):
 
