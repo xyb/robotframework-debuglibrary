@@ -47,7 +47,7 @@ Or you can run it standalone as a ``RobotFramework`` shell::
 
     Documented commands (type help <topic>):
     ========================================
-    EOF  exit  help  k  keywords  l  libs  pdb  s  selenium
+    EOF  d  docs  exit  help  k  keywords  l  libs  pdb  s  selenium
 
     > log  hello
     > get time
