@@ -574,7 +574,7 @@ use the TAB keyboard key to autocomplete keywords.\
         """
 
         for lib in get_libs():
-            for keyword in get_lib_keywords(lib, long_format=True):
+            for keyword in get_lib_keywords(lib, True):
                 if keyword['name'].lower() == kw_name.lower():
                     print(keyword['doc'])
                     return
