@@ -119,12 +119,13 @@ def memoize(function):
     memo = {}
 
     @wraps(function)
-    def wrapper(*args):
-        if args in memo:
-            return memo[args]
+    def wrapper(*args, **kwargs):
+        key = (args, frozenset(sorted(kwargs.items())))
+        if key in memo:
+            return memo[key]
         else:
-            rv = function(*args)
-            memo[args] = rv
+            rv = function(*args, **kwargs)
+            memo[key] = rv
             return rv
     return wrapper
 
