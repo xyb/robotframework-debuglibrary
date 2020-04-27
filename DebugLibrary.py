@@ -229,33 +229,33 @@ def run_keyword(bi, command):
         variable_name = keyword.rstrip('= ')
         if rf_version <= 3.1:
             if is_var(variable_name):
-            variable_only = not args
-            if variable_only:
-                display_value = ['Log to console', keyword]
-                bi.run_keyword(*display_value)
-            else:
-                variable_value = assign_variable(bi,
-                                                 variable_name,
-                                                 args)
-                print_output('#',
-                             '{} = {!r}'.format(variable_name,
-                                                variable_value))
+                variable_only = not args
+                if variable_only:
+                    display_value = ['Log to console', keyword]
+                    bi.run_keyword(*display_value)
+                else:
+                    variable_value = assign_variable(bi,
+                                                     variable_name,
+                                                     args)
+                    print_output('#',
+                                 '{} = {!r}'.format(variable_name,
+                                                    variable_value))
             else:
                 result = bi.run_keyword(keyword, *args)
                 if result:
                     print_output('<', repr(result))
         elif rf_version >= 3.2:
             if is_variable(variable_name):
-            variable_only = not args
-            if variable_only:
-                display_value = ['Log to console', keyword]
-                bi.run_keyword(*display_value)
-            else:
-                variable_value = assign_variable(bi,
-                                                 variable_name,
-                                                 args)
-                print_output('#',
-                             '{} = {!r}'.format(variable_name,
+                variable_only = not args
+                if variable_only:
+                    display_value = ['Log to console', keyword]
+                    bi.run_keyword(*display_value)
+                else:
+                    variable_value = assign_variable(bi,
+                                                     variable_name,
+                                                     args)
+                    print_output('#',
+                                 '{} = {!r}'.format(variable_name,
                                                 variable_value))
             else:
                 result = bi.run_keyword(keyword, *args)
