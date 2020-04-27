@@ -229,7 +229,7 @@ def run_keyword(bi, command):
         variable_name = keyword.rstrip('= ')
         if rf_version <= 3.1:
             if is_var(variable_name):
-            variable_only = not args
+                variable_only = not args
             if variable_only:
                 display_value = ['Log to console', keyword]
                 bi.run_keyword(*display_value)
