@@ -240,10 +240,10 @@ def run_keyword(bi, command):
                 print_output('#',
                              '{} = {!r}'.format(variable_name,
                                                 variable_value))
-            else:
-                result = bi.run_keyword(keyword, *args)
-                if result:
-                    print_output('<', repr(result))
+        else:
+            result = bi.run_keyword(keyword, *args)
+            if result:
+                print_output('<', repr(result))
         elif rf_version >= 3.2:
             if is_variable(variable_name):
             variable_only = not args
@@ -257,10 +257,10 @@ def run_keyword(bi, command):
                 print_output('#',
                              '{} = {!r}'.format(variable_name,
                                                 variable_value))
-            else:
-                result = bi.run_keyword(keyword, *args)
-                if result:
-                    print_output('<', repr(result))
+        else:
+            result = bi.run_keyword(keyword, *args)
+            if result:
+                print_output('<', repr(result))
     except ExecutionFailed as exc:
         print_error('! keyword:', command)
         print_error('!', exc.message)
