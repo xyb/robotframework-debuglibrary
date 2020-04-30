@@ -55,6 +55,8 @@ setup(
     url='https://github.com/xyb/robotframework-debuglibrary/',
     keywords='robotframework,debug,shell,repl',
     install_requires=install_requires,
+    tests_require='pexpect',
+    test_suite='test_debuglibrary.suite',
     platforms=['Linux', 'Unix', 'Windows', 'MacOS X'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',

@@ -7,3 +7,4 @@ output.xml
 report.html
 .venv
 TODO
+.eggs/
