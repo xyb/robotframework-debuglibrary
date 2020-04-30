@@ -43,7 +43,7 @@ if rf_version <= 3.1:
 elif rf_version >= 3.2:
     from robot.variables.search import is_variable
 
-__version__ = '1.3.0'
+__version__ = '1.3.1'
 
 HISTORY_PATH = os.environ.get('RFDEBUG_HISTORY', '~/.rfdebug_history')
 KEYWORD_SEP = re.compile('  +|\t')
