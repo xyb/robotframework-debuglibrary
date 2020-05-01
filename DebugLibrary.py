@@ -4,10 +4,7 @@
 # This software is licensed under the New BSD License. See the LICENSE
 # file in the top distribution directory for the full license text.
 
-"""A debug library and REPL for RobotFramework.
-"""
-
-from __future__ import print_function
+"""A debug library and REPL for RobotFramework."""
 
 import cmd
 import os
@@ -16,16 +13,14 @@ import sys
 import tempfile
 from functools import wraps
 
+from prompt_toolkit import print_formatted_text
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion
+from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.history import FileHistory
-from prompt_toolkit.interface import AbortAction
-from prompt_toolkit.shortcuts import print_tokens, prompt
-from prompt_toolkit.styles import style_from_dict
-from pygments.token import Token
-
-from robot import version
-from robot import run_cli
+from prompt_toolkit.shortcuts import CompleteStyle, prompt
+from prompt_toolkit.styles import Style
+from robot import run_cli, version
 from robot.api import logger
 from robot.errors import ExecutionFailed, HandlerExecutionFailed
 from robot.libdocpkg.model import LibraryDoc
@@ -39,7 +34,7 @@ rf_version = version.get_version(naked=False)
 rf_version = float(rf_version[:3])
 
 if rf_version <= 3.1:
-    from robot.variables import is_var    
+    from robot.variables import is_var
 elif rf_version >= 3.2:
     from robot.variables.search import is_variable
 
@@ -69,7 +64,7 @@ class HelpMeta(type):
             if key.startswith('do_') and hasattr(value, '__call__'):
                 def auto_help(self):
                     print(self.get_help_string(key))
-                attrs['help_' + key] = help  # assign help method
+                attrs['help_' + key] = auto_help  # assign help method
 
         type.__init__(cls, name, bases, attrs)
 
@@ -172,25 +167,25 @@ def get_keywords():
             yield keyword
 
 
-NORMAL_STYLE = style_from_dict({
-    Token.Head: '#00FF00',
-    Token.Message: '#CCCCCC',
+NORMAL_STYLE = Style.from_dict({
+    'head': '#00FF00',
+    'message': '#CCCCCC',
 })
 
-ERROR_STYLE = style_from_dict({
-    Token.Head: '#FF0000',
-    Token.Message: '#FFFFFF',
+ERROR_STYLE = Style.from_dict({
+    'head': '#FF0000',
+    'message': '#FFFFFF',
 })
 
 
 def print_output(head, message, style=NORMAL_STYLE):
     """Print prompt-toolkit tokens to output"""
-    tokens = [
-        (Token.Head, head + ' '),
-        (Token.Message, message),
-        (Token, '\n'),
-    ]
-    print_tokens(tokens, style=style)
+    tokens = FormattedText([
+        ('class:head', head + ' '),
+        ('class:message', message),
+        ('', ''),
+    ])
+    print_formatted_text(tokens, style=style)
 
 
 def print_error(head, message, style=ERROR_STYLE):
@@ -235,11 +230,11 @@ def run_keyword(bi, command):
                     bi.run_keyword(*display_value)
                 else:
                     variable_value = assign_variable(bi,
-                                                 variable_name,
-                                                 args)
+                                                     variable_name,
+                                                     args)
                     print_output('#',
-                             '{} = {!r}'.format(variable_name,
-                                                variable_value))
+                                 '{} = {!r}'.format(variable_name,
+                                                    variable_value))
             else:
                 result = bi.run_keyword(keyword, *args)
                 if result:
@@ -252,11 +247,11 @@ def run_keyword(bi, command):
                     bi.run_keyword(*display_value)
                 else:
                     variable_value = assign_variable(bi,
-                                                 variable_name,
-                                                 args)
+                                                     variable_name,
+                                                     args)
                     print_output('#',
-                             '{} = {!r}'.format(variable_name,
-                                                variable_value))
+                                 '{} = {!r}'.format(variable_name,
+                                                    variable_value))
             else:
                 result = bi.run_keyword(keyword, *args)
                 if result:
@@ -333,7 +328,7 @@ class PtkCmd(BaseCmd):
 
     """CMD shell using prompt-toolkit"""
 
-    prompt = u'> '
+    prompt = '> '
     get_prompt_tokens = None
     prompt_style = None
     intro = '''\
@@ -392,28 +387,31 @@ Type "help" for more information.\
                               auto_suggest=AutoSuggestFromHistory(),
                               enable_history_search=True,
                               completer=self.get_completer(),
-                              display_completions_in_columns=True,
-                              on_abort=AbortAction.RETRY)
+                              complete_style=CompleteStyle.MULTI_COLUMN,
+                              )
                 if self.get_prompt_tokens:
-                    kwargs['get_prompt_tokens'] = self.get_prompt_tokens
                     kwargs['style'] = self.prompt_style
-                    prompt_str = u''
+                    prompt_str = self.get_prompt_tokens()
                 else:
                     prompt_str = self.prompt
                 try:
-                    line = prompt(prompt_str, **kwargs)
+                    line = prompt(message=prompt_str, **kwargs)
+                except KeyboardInterrupt:
+                    continue
                 except EOFError:
                     line = 'EOF'
+
             line = self.precmd(line)
             stop = self.onecmd(line)
             stop = self.postcmd(stop, line)
+
         self.postloop()
 
 
-def get_prompt_tokens(self, cli):
+def get_prompt_tokens(self):
     """Print prompt-toolkit prompt"""
     return [
-        (Token.Prompt, u'> '),
+        ('class:prompt', '> '),
     ]
 
 
@@ -422,7 +420,7 @@ class DebugCmd(PtkCmd):
     """Interactive debug shell for robotframework"""
 
     get_prompt_tokens = get_prompt_tokens
-    prompt_style = style_from_dict({Token.Prompt: '#0000FF'})
+    prompt_style = Style.from_dict({'prompt': '#0000FF'})
 
     def __init__(self, completekey='tab', stdin=None, stdout=None):
         PtkCmd.__init__(self, completekey, stdin, stdout)
@@ -473,12 +471,12 @@ use the TAB keyboard key to autocomplete keywords.\
             name = keyword['lib'] + '.' + keyword['name']
             commands.append((name,
                              keyword['name'],
-                             u'Keyword: {0}'.format(keyword['doc'])))
+                             'Keyword: {0}'.format(keyword['doc'])))
             # name without library
             commands.append((keyword['name'],
                              keyword['name'],
-                             u'Keyword[{0}.]: {1}'.format(keyword['lib'],
-                                                          keyword['doc'])))
+                             'Keyword[{0}.]: {1}'.format(keyword['lib'],
+                                                         keyword['doc'])))
 
         cmd_completer = CmdCompleter(commands, self)
         return cmd_completer
@@ -608,6 +606,7 @@ use the TAB keyboard key to autocomplete keywords.\
         print("could not find documentation for keyword {}".format(kw_name))
 
     do_d = do_docs
+
 
 class DebugLibrary(object):
 

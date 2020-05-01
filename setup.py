@@ -3,19 +3,14 @@
 import io
 import os
 import re
-import sys
 
 from setuptools import setup
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(ROOT, 'README.rst')).read()
-PY3 = sys.version_info[0] == 3
 
-install_requires = ['prompt-toolkit < 2', 'pygments']
-if PY3:
-    install_requires.append('robotframework >= 3.0')
-else:
-    install_requires.append('robotframework >= 2.9')
+install_requires = ['prompt-toolkit >= 2']
+install_requires.append('robotframework >= 3.0')
 
 
 def read(*names, **kwargs):
