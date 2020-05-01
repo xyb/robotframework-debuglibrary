@@ -16,6 +16,10 @@ which can be used as an interactive shell(REPL) also.
    :target: https://pypi.org/project/robotframework-debuglibrary/
    :alt: Latest version
 
+.. image:: https://img.shields.io/pypi/pyversions/robotframework-debuglibrary
+   :target: https://github.com/xyb/robotframework-debuglibrary
+   :alt: Support python versions
+
 .. image:: https://img.shields.io/pypi/l/robotframework-debuglibrary.svg
    :target: https://github.com/xyb/robotframework-debuglibrary/blob/master/LICENSE
    :alt: License
