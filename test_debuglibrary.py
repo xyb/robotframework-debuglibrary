@@ -15,14 +15,23 @@ def functional_testing():
         child.write(keys)
         index = child.expect([pattern, pexpect.EOF, pexpect.TIMEOUT],
                              timeout=TIMEOUT_SECONDS)
-        assert index == 0
+        try:
+            assert index == 0
+        except AssertionError:
+            print('Screen buffer: ', child._buffer.getvalue())
+            raise
+
         child.write('\003')  # ctrl-c: reset inputs
 
     def check_command(command, pattern):
         child.sendline(command)
         index = child.expect([pattern, pexpect.EOF, pexpect.TIMEOUT],
                              timeout=TIMEOUT_SECONDS)
-        assert index == 0
+        try:
+            assert index == 0
+        except AssertionError:
+            print('Screen buffer: ', child._buffer.getvalue())
+            raise
 
     check_prompt('key\t', 'keywords')
     check_prompt('key\t', 'Keyword Should Exist')
