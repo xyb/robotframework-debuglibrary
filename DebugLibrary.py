@@ -20,7 +20,7 @@ from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.shortcuts import CompleteStyle, prompt
 from prompt_toolkit.styles import Style
-from robot import run_cli, version
+from robot import run_cli
 from robot.api import logger
 from robot.errors import ExecutionFailed, HandlerExecutionFailed
 from robot.libdocpkg.model import LibraryDoc
@@ -30,13 +30,10 @@ from robot.libraries.BuiltIn import BuiltIn
 from robot.running.namespace import IMPORTER
 from robot.running.signalhandler import STOP_SIGNAL_MONITOR
 
-rf_version = version.get_version(naked=False)
-rf_version = float(rf_version[:3])
-
-if rf_version <= 3.1:
-    from robot.variables import is_var
-elif rf_version >= 3.2:
+try:
     from robot.variables.search import is_variable
+except ImportError:
+    from robot.variables import is_var as is_variable
 
 __version__ = '1.3.1'
 
@@ -198,40 +195,22 @@ def run_keyword(bi, command):
             return
 
         variable_name = keyword.rstrip('= ')
-        if rf_version <= 3.1:
-            if is_var(variable_name):
-                variable_only = not args
-                if variable_only:
-                    display_value = ['Log to console', keyword]
-                    bi.run_keyword(*display_value)
-                else:
-                    variable_value = assign_variable(bi,
-                                                     variable_name,
-                                                     args)
-                    print_output('#',
-                                 '{} = {!r}'.format(variable_name,
-                                                    variable_value))
+        if is_variable(variable_name):
+            variable_only = not args
+            if variable_only:
+                display_value = ['Log to console', keyword]
+                bi.run_keyword(*display_value)
             else:
-                result = bi.run_keyword(keyword, *args)
-                if result:
-                    print_output('<', repr(result))
-        elif rf_version >= 3.2:
-            if is_variable(variable_name):
-                variable_only = not args
-                if variable_only:
-                    display_value = ['Log to console', keyword]
-                    bi.run_keyword(*display_value)
-                else:
-                    variable_value = assign_variable(bi,
-                                                     variable_name,
-                                                     args)
-                    print_output('#',
-                                 '{} = {!r}'.format(variable_name,
-                                                    variable_value))
-            else:
-                result = bi.run_keyword(keyword, *args)
-                if result:
-                    print_output('<', repr(result))
+                variable_value = assign_variable(bi,
+                                                 variable_name,
+                                                 args)
+                print_output('#',
+                             '{} = {!r}'.format(variable_name,
+                                                variable_value))
+        else:
+            result = bi.run_keyword(keyword, *args)
+            if result:
+                print_output('<', repr(result))
     except ExecutionFailed as exc:
         print_error('! keyword:', command)
         print_error('!', exc.message)
