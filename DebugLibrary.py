@@ -154,7 +154,7 @@ ERROR_STYLE = Style.from_dict({
 def print_output(head, message, style=NORMAL_STYLE):
     """Print prompt-toolkit tokens to output."""
     tokens = FormattedText([
-        ('class:head', '{} '.format(head)),
+        ('class:head', '{0} '.format(head)),
         ('class:message', message),
         ('', ''),
     ])
@@ -167,25 +167,21 @@ def print_error(head, message, style=ERROR_STYLE):
 
 
 def parse_keyword(command):
-    unicode_command = ''
-    if sys.version_info > (3,):
-        unicode_command = command
-    else:
-        unicode_command = command.decode(COMMAND_LINE_ENCODING)
-    return KEYWORD_SEP.split(unicode_command)
+    return KEYWORD_SEP.split(command)
 
 
-def assign_variable(bi, variable_name, args):
-    variable_value = bi.run_keyword(*args)
-    bi._variables.__setitem__(variable_name, variable_value)
+def assign_variable(builtin_inst, variable_name, args):
+    variable_value = builtin_inst.run_keyword(*args)
+    builtin_inst._variables.__setitem__(variable_name, variable_value)
     return variable_value
 
 
-def run_keyword(bi, command):
+def run_keyword(builtin_inst, command):
     """Run a keyword in robotframewrk environment."""
     if not command:
         return
-    try:
+
+    def _run(command):
         keyword_args = parse_keyword(command)
         keyword = keyword_args[0]
         args = keyword_args[1:]
@@ -199,18 +195,22 @@ def run_keyword(bi, command):
             variable_only = not args
             if variable_only:
                 display_value = ['Log to console', keyword]
-                bi.run_keyword(*display_value)
+                builtin_inst.run_keyword(*display_value)
             else:
-                variable_value = assign_variable(bi,
-                                                 variable_name,
-                                                 args)
-                print_output('#',
-                             '{} = {!r}'.format(variable_name,
-                                                variable_value))
+                variable_value = assign_variable(
+                    builtin_inst,
+                    variable_name,
+                    args,
+                )
+                echo = '{0} = {1!r}'.format(variable_name, variable_value)
+                print_output('#', echo)
         else:
-            result = bi.run_keyword(keyword, *args)
-            if result:
-                print_output('<', repr(result))
+            output = builtin_inst.run_keyword(keyword, *args)
+            if output:
+                print_output('<', repr(output))
+
+    try:
+        _run(command)
     except ExecutionFailed as exc:
         print_error('! keyword:', command)
         print_error('!', exc.message)
@@ -237,30 +237,32 @@ class CmdCompleter(Completer):
 
     def get_argument_completions(self, completer, document):
         """Using Cmd.py's completer to complete arguments."""
-        endidx = document.cursor_position_col
+        end_idx = document.cursor_position_col
         line = document.current_line
-        begidx = (line[:endidx].rfind(' ') + 1
-                  if line[:endidx].rfind(' ') >= 0 else 0)
-        prefix = line[begidx:endidx]
+        if line[:end_idx].rfind(' ') >= 0:
+            begin_idx = line[:end_idx].rfind(' ') + 1
+        else:
+            begin_idx = 0
+        prefix = line[begin_idx:end_idx]
 
-        completions = completer(prefix,
-                                line,
-                                begidx,
-                                endidx)
+        completions = completer(prefix, line, begin_idx, end_idx)
         for comp in completions:
-            yield Completion(comp, begidx - endidx, display=comp)
+            yield Completion(comp, begin_idx - end_idx, display=comp)
 
     def get_completions(self, document, complete_event):
         """Compute suggestions."""
         text = document.text_before_cursor.lower()
-        parts = KEYWORD_SEP.split(text)
+        parts = parse_keyword(text)
 
         if len(parts) >= 2:
             cmd_name = parts[0].strip()
-            completer = getattr(self.cmd_repl, 'complete_' + cmd_name, None)
+            completer = getattr(
+                self.cmd_repl,
+                'complete_{0}'.format(cmd_name),
+                None,
+            )
             if completer:
-                for c in self.get_argument_completions(completer, document):
-                    yield c
+                yield from self.get_argument_completions(completer, document)
             return
 
         for name in self.names:
@@ -272,10 +274,12 @@ class CmdCompleter(Completer):
             if name.lower().strip().startswith(text.strip()):
                 display = self.displays.get(name, '')
                 display_meta = self.display_metas.get(name, '')
-                yield Completion(name,
-                                 -len(text),
-                                 display=display,
-                                 display_meta=display_meta)
+                yield Completion(
+                    name,
+                    -len(text),
+                    display=display,
+                    display_meta=display_meta,
+                )
 
 
 class PtkCmd(BaseCmd):
@@ -301,7 +305,7 @@ Type "help" for more information.\
 
     def get_help_string(self, command_name):
         """Get help document of command."""
-        func = getattr(self, 'do_' + command_name, None)
+        func = getattr(self, 'do_{0}'.format(command_name), None)
         if not func:
             return ''
         return func.__doc__
@@ -314,11 +318,10 @@ Type "help" for more information.\
     def get_completer(self):
         """Get completer instance."""
         commands = [(name, '', doc) for name, doc in self.get_helps()]
-        cmd_completer = CmdCompleter(commands, self)
-        return cmd_completer
+        return CmdCompleter(commands, self)
 
     def pre_loop(self):
-        pass
+        """Excute before every loop iteration."""
 
     def cmdloop(self, intro=None):
         """Better command loop supported by prompt_toolkit.
@@ -328,7 +331,8 @@ Type "help" for more information.\
         if intro is not None:
             self.intro = intro
         if self.intro:
-            self.stdout.write(str(self.intro) + '\n')
+            self.stdout.write(self.intro)
+            self.stdout.write('\n')
 
         stop = None
         while not stop:
@@ -336,12 +340,13 @@ Type "help" for more information.\
             if self.cmdqueue:
                 line = self.cmdqueue.pop(0)
             else:
-                kwargs = dict(history=self.history,
-                              auto_suggest=AutoSuggestFromHistory(),
-                              enable_history_search=True,
-                              completer=self.get_completer(),
-                              complete_style=CompleteStyle.MULTI_COLUMN,
-                              )
+                kwargs = dict(
+                    history=self.history,
+                    auto_suggest=AutoSuggestFromHistory(),
+                    enable_history_search=True,
+                    completer=self.get_completer(),
+                    complete_style=CompleteStyle.MULTI_COLUMN,
+                )
                 if self.get_prompt_tokens:
                     kwargs['style'] = self.prompt_style
                     prompt_str = self.get_prompt_tokens(self.prompt)
@@ -361,7 +366,7 @@ Type "help" for more information.\
         self.postloop()
 
 
-def get_prompt_tokens(self, prompt_text):
+def get_debug_prompt_tokens(self, prompt_text):
     """Print prompt-toolkit prompt."""
     return [
         ('class:prompt', prompt_text),
@@ -371,22 +376,23 @@ def get_prompt_tokens(self, prompt_text):
 class DebugCmd(PtkCmd):
     """Interactive debug shell for robotframework."""
 
-    get_prompt_tokens = get_prompt_tokens
+    get_prompt_tokens = get_debug_prompt_tokens
     prompt_style = Style.from_dict({'prompt': '#0000FF'})
 
     def __init__(self, completekey='tab', stdin=None, stdout=None):
         PtkCmd.__init__(self, completekey, stdin, stdout)
-        self.rf_bi = BuiltIn()
+        self.rf_builtin_inst = BuiltIn()
 
     def postcmd(self, stop, line):
-        """Run after a command"""
+        """Run after a command."""
         return stop
 
     def reset_robotframework_exception(self):
+        """Resume RF after press ctrl+c during keyword running."""
         if STOP_SIGNAL_MONITOR._signal_count:
             STOP_SIGNAL_MONITOR._signal_count = 0
             STOP_SIGNAL_MONITOR._running_keyword = True
-            logger.info('Reset last exception by DebugLibrary')
+            logger.info('Reset last exception of DebugLibrary')
 
     def pre_loop(self):
         self.reset_robotframework_exception()
@@ -398,7 +404,8 @@ class DebugCmd(PtkCmd):
 Input Robotframework keywords, or commands listed below.
 Use "libs" or "l" to see available libraries,
 use "keywords" or "k" see the list of library keywords,
-use the TAB keyboard key to autocomplete keywords.\
+use the TAB keyboard key to autocomplete keywords.
+Access https://github.com/xyb/robotframework-debuglibrary for more details.\
 ''')
 
         PtkCmd.do_help(self, arg)
@@ -406,29 +413,32 @@ use the TAB keyboard key to autocomplete keywords.\
     def get_completer(self):
         """Get completer instance specified for robotframework."""
         # commands
-        commands = [(cmd_name,
-                     cmd_name,
-                     'DEBUG command: {0}'.format(doc))
+        commands = [(cmd_name, cmd_name, 'DEBUG command: {0}'.format(doc))
                     for cmd_name, doc in self.get_helps()]
 
         # libraries
         for lib in get_libs():
-            commands.append((lib.name,
-                             lib.name,
-                             'Library: {0} {1}'.format(lib.name, lib.version)))
+            commands.append((
+                lib.name,
+                lib.name,
+                'Library: {0} {1}'.format(lib.name, lib.version),
+            ))
 
         # keywords
         for keyword in get_keywords():
             # name with library
-            name = keyword['lib'] + '.' + keyword['name']
-            commands.append((name,
-                             keyword['name'],
-                             'Keyword: {0}'.format(keyword['doc'])))
+            name = '{0}.{1}'.format(keyword['lib'], keyword['name'])
+            commands.append((
+                name,
+                keyword['name'],
+                'Keyword: {0}'.format(keyword['doc']),
+            ))
             # name without library
-            commands.append((keyword['name'],
-                             keyword['name'],
-                             'Keyword[{0}.]: {1}'.format(keyword['lib'],
-                                                         keyword['doc'])))
+            commands.append((
+                keyword['name'],
+                keyword['name'],
+                'Keyword[{0}.]: {1}'.format(keyword['lib'], keyword['doc']),
+           ))
 
         cmd_completer = CmdCompleter(commands, self)
         return cmd_completer
@@ -443,13 +453,13 @@ use the TAB keyboard key to autocomplete keywords.\
 
         command = 'import library  SeleniumLibrary'
         print_output('#', command)
-        run_keyword(self.rf_bi, command)
+        run_keyword(self.rf_builtin_inst, command)
 
         # Set defaults, overriden if args set
         url = 'http://www.google.com/'
         browser = 'firefox'
         if arg:
-            args = KEYWORD_SEP.split(arg)
+            args = parse_keyword(arg)
             if len(args) == 2:
                 url, browser = args
             else:
@@ -459,7 +469,7 @@ use the TAB keyboard key to autocomplete keywords.\
 
         command = 'open browser  %s  %s' % (url, browser)
         print_output('#', command)
-        run_keyword(self.rf_bi, command)
+        run_keyword(self.rf_builtin_inst, command)
 
     do_s = do_selenium
 
@@ -485,7 +495,7 @@ use the TAB keyboard key to autocomplete keywords.\
         """Run RobotFramework keywords."""
         command = line.strip()
 
-        run_keyword(self.rf_bi, command)
+        run_keyword(self.rf_builtin_inst, command)
 
     def do_libs(self, args):
         """Print imported and builtin libraries, with source if `-s` specified.
@@ -528,8 +538,7 @@ use the TAB keyboard key to autocomplete keywords.\
             lib = libs[name]
             print_output('< Keywords of library', name)
             for keyword in get_lib_keywords(lib):
-                print_output('   {}\t'.format(keyword['name']),
-                             keyword['doc'])
+                print_output('   {}\t'.format(keyword['name']), keyword['doc'])
 
     do_k = do_keywords
 
@@ -633,7 +642,7 @@ def shell():
     """A standalone robotframework shell."""
 
     with tempfile.NamedTemporaryFile(prefix='robot-debug-',
-                                     suffix='.txt',
+                                     suffix='.robot',
                                      delete=False) as test_file:
         try:
             test_file.write(TEST_SUITE)
