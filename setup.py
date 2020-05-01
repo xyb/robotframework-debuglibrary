@@ -9,7 +9,7 @@ from setuptools import setup
 ROOT = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(ROOT, 'README.rst')).read()
 
-install_requires = ['prompt-toolkit >= 2']
+install_requires = ['prompt-toolkit < 3']
 install_requires.append('robotframework >= 3.0')
 
 
