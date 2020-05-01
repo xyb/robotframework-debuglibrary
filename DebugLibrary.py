@@ -43,43 +43,15 @@ __version__ = '1.3.1'
 HISTORY_PATH = os.environ.get('RFDEBUG_HISTORY', '~/.rfdebug_history')
 KEYWORD_SEP = re.compile('  +|\t')
 
-
-def get_command_line_encoding():
-    """Get encoding from shell environment, default utf-8"""
-    encoding = ''
-    try:
-        encoding = sys.stdout.encoding
-    except AttributeError:
-        encoding = sys.__stdout__.encoding
-    return encoding or 'utf-8'
+COMMAND_LINE_ENCODING = sys.stdout.encoding or 'utf-8'
 
 
-COMMAND_LINE_ENCODING = get_command_line_encoding()
-
-
-class HelpMeta(type):
-
-    def __init__(cls, name, bases, attrs):
-        for key, value in attrs.items():
-            if key.startswith('do_') and hasattr(value, '__call__'):
-                def auto_help(self):
-                    print(self.get_help_string(key))
-                attrs['help_' + key] = auto_help  # assign help method
-
-        type.__init__(cls, name, bases, attrs)
-
-
-class BaseCmd(cmd.Cmd, object):
-
-    """Basic REPL tool"""
-
-    __metaclass__ = HelpMeta
+class BaseCmd(cmd.Cmd):
+    """Basic REPL tool."""
 
     def emptyline(self):
         """By default Cmd runs last command if an empty line is entered.
         Disable it."""
-
-        pass
 
     def do_exit(self, arg):
         """Exit the interpreter. You can also use the Ctrl-D shortcut."""
@@ -107,7 +79,7 @@ def get_libs():
 
 def get_libs_as_dict():
     """Get libraries robotframework imported as a name -> lib dict"""
-    return {l.name: l for l in IMPORTER._library_cache._items}
+    return {lib.name: lib for lib in IMPORTER._library_cache._items}
 
 
 def match_libs(name=''):
@@ -124,21 +96,24 @@ def memoize(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
         key = (args, frozenset(sorted(kwargs.items())))
+
         if key in memo:
             return memo[key]
-        else:
-            rv = function(*args, **kwargs)
-            memo[key] = rv
-            return rv
+
+        rv = function(*args, **kwargs)
+        memo[key] = rv
+        return rv
     return wrapper
 
 
 class ImportedLibraryDocBuilder(LibraryDocBuilder):
 
     def build(self, lib):
-        libdoc = LibraryDoc(name=lib.name,
-                            doc=self._get_doc(lib),
-                            doc_format=lib.doc_format)
+        libdoc = LibraryDoc(
+            name=lib.name,
+            doc=self._get_doc(lib),
+            doc_format=lib.doc_format,
+        )
         libdoc.inits = self._get_initializers(lib)
         libdoc.keywords = KeywordDocBuilder().build_keywords(lib)
         return libdoc
@@ -146,7 +121,7 @@ class ImportedLibraryDocBuilder(LibraryDocBuilder):
 
 @memoize
 def get_lib_keywords(library, long_format=False):
-    """Get keywords of imported library"""
+    """Get keywords of imported library."""
     lib = ImportedLibraryDocBuilder().build(library)
     keywords = []
     for keyword in lib.keywords:
@@ -154,17 +129,18 @@ def get_lib_keywords(library, long_format=False):
             doc = keyword.doc
         else:
             doc = keyword.doc.split('\n')[0]
-        keywords.append({'name': keyword.name,
-                         'lib': library.name,
-                         'doc': doc})
+        keywords.append({
+            'name': keyword.name,
+            'lib': library.name,
+            'doc': doc,
+        })
     return keywords
 
 
 def get_keywords():
-    """Get all keywords of libraries"""
+    """Get all keywords of libraries."""
     for lib in get_libs():
-        for keyword in get_lib_keywords(lib):
-            yield keyword
+        yield from get_lib_keywords(lib)
 
 
 NORMAL_STYLE = Style.from_dict({
@@ -179,9 +155,9 @@ ERROR_STYLE = Style.from_dict({
 
 
 def print_output(head, message, style=NORMAL_STYLE):
-    """Print prompt-toolkit tokens to output"""
+    """Print prompt-toolkit tokens to output."""
     tokens = FormattedText([
-        ('class:head', head + ' '),
+        ('class:head', '{} '.format(head)),
         ('class:message', message),
         ('', ''),
     ])
@@ -189,7 +165,7 @@ def print_output(head, message, style=NORMAL_STYLE):
 
 
 def print_error(head, message, style=ERROR_STYLE):
-    """Print to output with error style"""
+    """Print to output with error style."""
     print_output(head, message, style=style)
 
 
@@ -209,7 +185,7 @@ def assign_variable(bi, variable_name, args):
 
 
 def run_keyword(bi, command):
-    """Run a keyword in robotframewrk environment"""
+    """Run a keyword in robotframewrk environment."""
     if not command:
         return
     try:
@@ -268,8 +244,7 @@ def run_keyword(bi, command):
 
 
 class CmdCompleter(Completer):
-
-    """Completer for debug shell"""
+    """Completer for debug shell."""
 
     def __init__(self, commands, cmd_repl=None):
         self.names = []
@@ -282,7 +257,7 @@ class CmdCompleter(Completer):
         self.cmd_repl = cmd_repl
 
     def get_argument_completions(self, completer, document):
-        """Using Cmd.py's completer to complete arguments"""
+        """Using Cmd.py's completer to complete arguments."""
         endidx = document.cursor_position_col
         line = document.current_line
         begidx = (line[:endidx].rfind(' ') + 1
@@ -297,7 +272,7 @@ class CmdCompleter(Completer):
             yield Completion(comp, begidx - endidx, display=comp)
 
     def get_completions(self, document, complete_event):
-        """Compute suggestions"""
+        """Compute suggestions."""
         text = document.text_before_cursor.lower()
         parts = KEYWORD_SEP.split(text)
 
@@ -325,8 +300,7 @@ class CmdCompleter(Completer):
 
 
 class PtkCmd(BaseCmd):
-
-    """CMD shell using prompt-toolkit"""
+    """CMD shell using prompt-toolkit."""
 
     prompt = '> '
     get_prompt_tokens = None
@@ -341,25 +315,25 @@ Type "help" for more information.\
         self.history = FileHistory(os.path.expanduser(HISTORY_PATH))
 
     def get_cmd_names(self):
-        """Get all command names of CMD shell"""
+        """Get all command names of CMD shell."""
         pre = 'do_'
         cut = len(pre)
         return [_[cut:] for _ in self.get_names() if _.startswith(pre)]
 
     def get_help_string(self, command_name):
-        """Get help document of command"""
+        """Get help document of command."""
         func = getattr(self, 'do_' + command_name, None)
         if not func:
             return ''
         return func.__doc__
 
     def get_helps(self):
-        """Get all help documents of commands"""
+        """Get all help documents of commands."""
         return [(name, self.get_help_string(name) or name)
                 for name in self.get_cmd_names()]
 
     def get_completer(self):
-        """Get completer instance"""
+        """Get completer instance."""
         commands = [(name, '', doc) for name, doc in self.get_helps()]
         cmd_completer = CmdCompleter(commands, self)
         return cmd_completer
@@ -368,7 +342,7 @@ Type "help" for more information.\
         pass
 
     def cmdloop(self, intro=None):
-        """Better command loop supported by prompt_toolkit
+        """Better command loop supported by prompt_toolkit.
 
         override default cmdloop method
         """
@@ -391,7 +365,7 @@ Type "help" for more information.\
                               )
                 if self.get_prompt_tokens:
                     kwargs['style'] = self.prompt_style
-                    prompt_str = self.get_prompt_tokens()
+                    prompt_str = self.get_prompt_tokens(self.prompt)
                 else:
                     prompt_str = self.prompt
                 try:
@@ -408,16 +382,15 @@ Type "help" for more information.\
         self.postloop()
 
 
-def get_prompt_tokens(self):
-    """Print prompt-toolkit prompt"""
+def get_prompt_tokens(self, prompt_text):
+    """Print prompt-toolkit prompt."""
     return [
-        ('class:prompt', '> '),
+        ('class:prompt', prompt_text),
     ]
 
 
 class DebugCmd(PtkCmd):
-
-    """Interactive debug shell for robotframework"""
+    """Interactive debug shell for robotframework."""
 
     get_prompt_tokens = get_prompt_tokens
     prompt_style = Style.from_dict({'prompt': '#0000FF'})
@@ -452,7 +425,7 @@ use the TAB keyboard key to autocomplete keywords.\
         PtkCmd.do_help(self, arg)
 
     def get_completer(self):
-        """Get completer instance specified for robotframework"""
+        """Get completer instance specified for robotframework."""
         # commands
         commands = [(cmd_name,
                      cmd_name,
@@ -512,7 +485,7 @@ use the TAB keyboard key to autocomplete keywords.\
     do_s = do_selenium
 
     def complete_selenium(self, text, line, begin_idx, end_idx):
-        """complete selenium command"""
+        """Complete selenium command."""
         webdrivers = ['firefox',
                       'chrome',
                       'ie',
@@ -530,7 +503,7 @@ use the TAB keyboard key to autocomplete keywords.\
     complete_s = complete_selenium
 
     def default(self, line):
-        """Run RobotFramework keywords"""
+        """Run RobotFramework keywords."""
         command = line.strip()
 
         run_keyword(self.rf_bi, command)
@@ -554,7 +527,7 @@ use the TAB keyboard key to autocomplete keywords.\
     do_l = do_libs
 
     def complete_libs(self, text, line, begin_idx, end_idx):
-        """complete libs command"""
+        """Complete libs command."""
         if len(line.split()) == 1 and line.endswith(' '):
             return ['-s']
         return []
@@ -562,7 +535,7 @@ use the TAB keyboard key to autocomplete keywords.\
     complete_l = complete_libs
 
     def do_keywords(self, args):
-        """Print keywords of libraries, all or starts with <lib_name>
+        """Print keywords of libraries, all or starts with <lib_name>.
 
         k(eywords) [<lib_name>]
         """
@@ -582,7 +555,7 @@ use the TAB keyboard key to autocomplete keywords.\
     do_k = do_keywords
 
     def complete_keywords(self, text, line, begin_idx, end_idx):
-        """complete keywords command"""
+        """Complete keywords command."""
         if len(line.split()) == 2:
             command, lib_name = line.split()
             return match_libs(lib_name)
@@ -593,7 +566,7 @@ use the TAB keyboard key to autocomplete keywords.\
     complete_k = complete_keywords
 
     def do_docs(self, kw_name):
-        """Get keyword documentation for individual keywords
+        """Get keyword documentation for individual keywords.
 
          d(ocs) [<keyword_name>]
         """
@@ -609,8 +582,7 @@ use the TAB keyboard key to autocomplete keywords.\
 
 
 class DebugLibrary(object):
-
-    """Debug Library for RobotFramework"""
+    """Debug Library for RobotFramework."""
 
     ROBOT_LIBRARY_SCOPE = 'GLOBAL'
     ROBOT_LIBRARY_VERSION = __version__
@@ -656,7 +628,7 @@ class DebugLibrary(object):
             'desired_capabilities={});' \
             'd.session_id="%s"' % (
                 remote_url,
-                session_id
+                session_id,
             )
 
         logger.console('''
@@ -679,7 +651,7 @@ RFDEBUG REPL
 
 
 def shell():
-    """A standalone robotframework shell"""
+    """A standalone robotframework shell."""
 
     with tempfile.NamedTemporaryFile(prefix='robot-debug-',
                                      suffix='.txt',
