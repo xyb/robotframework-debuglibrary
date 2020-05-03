@@ -1,3 +1,12 @@
+2020-05-03  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * release version 2.0.0
+    * drop python 2 and 3.4 support
+    * upgrade prompt-toolkit to 2.x
+        * prompt-toolkit 3 is not compatible with python3.5
+    * split the huge source file into small pieces
+    * refactory
+
 2020-04-30  Xie Yanbo  <xieyanbo@gmail.com>
 
     * release version 1.3.1

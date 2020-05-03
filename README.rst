@@ -24,6 +24,7 @@ which can be used as an interactive shell(REPL) also.
    :target: https://github.com/xyb/robotframework-debuglibrary/blob/master/LICENSE
    :alt: License
 
+
 Installation
 ------------
 
@@ -31,6 +32,13 @@ To install using ``pip``::
 
     pip install robotframework-debuglibrary
 
+NOTICE: 2.0 is not compatible with python 2
+*******************************************
+
+``DebugLibrary`` >= 2.0.0 supports Python versions 3.x only.
+If you still using python 2.7, please use ``DebugLibrary`` < 2.0.0
+
+    pip install 'robotframework-debuglibrary<2'
 
 Usage
 -----
