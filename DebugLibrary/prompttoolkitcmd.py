@@ -10,8 +10,7 @@ class BaseCmd(cmd.Cmd):
     """Basic REPL tool."""
 
     def emptyline(self):
-        """By default Cmd runs last command if an empty line is entered.
-        Disable it."""
+        """Do not repeat last command if press enter only."""
 
     def do_exit(self, arg):
         """Exit the interpreter. You can also use the Ctrl-D shortcut."""

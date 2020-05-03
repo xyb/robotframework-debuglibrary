@@ -1,14 +1,15 @@
 import os
 
+from robot.api import logger
 from robot.errors import ExecutionFailed, HandlerExecutionFailed
 
 from .cmdcompleter import CmdCompleter
 from .prompttoolkitcmd import PromptToolkitCmd
-from .robotutils import (SELENIUM_WEBDRIVERS, get_builtin_libs, get_keywords,
-                         get_lib_keywords, get_libs, get_libs_dict,
-                         get_robot_instance, match_libs,
-                         reset_robotframework_exception, run_keyword,
-                         start_selenium_commands)
+from .robotapp import get_robot_instance, reset_robotframework_exception
+from .robotkeyword import get_keywords, get_lib_keywords, run_keyword
+from .robotlib import get_builtin_libs, get_libs, get_libs_dict, match_libs
+from .robotselenium import SELENIUM_WEBDRIVERS, start_selenium_commands
+from .robotvar import assign_variable
 from .styles import (DEBUG_PROMPT_STYLE, get_debug_prompt_tokens, print_error,
                      print_output)
 
@@ -20,20 +21,22 @@ def run_robot_command(robot_instance, command):
     if not command:
         return
 
+    result = ''
     try:
         result = run_keyword(robot_instance, command)
-        if result:
-            head, message = result
-            print_output(head, message)
     except ExecutionFailed as exc:
         print_error('! keyword:', command)
-        print_error('!', exc.message)
+        print_error('! execution failed:', str(exc))
     except HandlerExecutionFailed as exc:
         print_error('! keyword:', command)
-        print_error('!', exc.full_message)
+        print_error('! handler execution failed:', exc.full_message)
     except Exception as exc:
         print_error('! keyword:', command)
         print_error('! FAILED:', repr(exc))
+
+    if result:
+        head, message = result
+        print_output(head, message)
 
 
 class DebugCmd(PromptToolkitCmd):
@@ -100,8 +103,7 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
                 'Keyword[{0}.]: {1}'.format(keyword['lib'], keyword['doc']),
             ))
 
-        cmd_completer = CmdCompleter(commands, self)
-        return cmd_completer
+        return CmdCompleter(commands, self)
 
     def do_selenium(self, arg):
         """Start a selenium webdriver and open url in browser you expect.
@@ -121,7 +123,8 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
         """Complete selenium command."""
         if len(line.split()) == 3:
             command, url, driver_name = line.lower().split()
-            return [d for d in SELENIUM_WEBDRIVERS if d.startswith(driver_name)]
+            return [driver for driver in SELENIUM_WEBDRIVERS
+                    if driver.startswith(driver_name)]
         elif len(line.split()) == 2 and line.endswith(' '):
             return SELENIUM_WEBDRIVERS
         return []
@@ -143,9 +146,9 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
         for lib in get_libs():
             print_output('   {}'.format(lib.name), lib.version)
             if lib.doc:
-                print('       {}'.format(lib.doc.split('\n')[0]))
+                logger.console('       {}'.format(lib.doc.split('\n')[0]))
             if '-s' in args:
-                print('       {}'.format(lib.source))
+                logger.console('       {}'.format(lib.source))
         print_output('<', 'Builtin libraries:')
         for name in sorted(get_builtin_libs()):
             print_output('   ' + name, '')
@@ -199,8 +202,9 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
         for lib in get_libs():
             for keyword in get_lib_keywords(lib, long_format=True):
                 if keyword['name'].lower() == kw_name.lower():
-                    print(keyword['doc'])
+                    logger.console(keyword['doc'])
                     return
-        print("could not find documentation for keyword {}".format(kw_name))
+
+        print_error('< not find keyword', kw_name)
 
     do_d = do_docs

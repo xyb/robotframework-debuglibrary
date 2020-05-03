@@ -2,15 +2,11 @@ import sys
 
 from .debugcmd import DebugCmd
 from .styles import print_output
-from .version import VERSION
 from .webdriver import get_remote_url, get_session_id, get_webdriver_remote
 
 
 class DebugKeywords(object):
     """Debug Keywords for RobotFramework."""
-
-    ROBOT_LIBRARY_SCOPE = 'GLOBAL'
-    ROBOT_LIBRARY_VERSION = VERSION
 
     def debug(self):
         """Open a interactive shell, run any RobotFramework keywords.

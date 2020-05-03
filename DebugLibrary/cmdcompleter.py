@@ -1,6 +1,6 @@
 from prompt_toolkit.completion import Completer, Completion
 
-from .robotutils import parse_keyword
+from .robotkeyword import parse_keyword
 
 
 class CmdCompleter(Completer):

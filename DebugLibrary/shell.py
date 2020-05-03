@@ -16,22 +16,21 @@ RFDEBUG REPL
 def shell():
     """A standalone robotframework shell."""
 
+    default_no_logs = '-l None -x None -o None -L None -r None'
+
     with tempfile.NamedTemporaryFile(prefix='robot-debug-',
                                      suffix='.robot',
                                      delete=False) as test_file:
+        test_file.write(TEST_SUITE)
+        test_file.flush()
+
+        if len(sys.argv) > 1:
+            args = sys.argv[1:] + [test_file.name]
+        else:
+            args = default_no_logs.split() + [test_file.name]
+
         try:
-            test_file.write(TEST_SUITE)
-            test_file.flush()
-
-            default_no_logs = '-l None -x None -o None -L None -r None'
-            if len(sys.argv) > 1:
-                args = sys.argv[1:] + [test_file.name]
-            else:
-                args = default_no_logs.split() + [test_file.name]
-
             rc = run_cli(args)
-
-            sys.exit(rc)
         finally:
             test_file.close()
             # pybot will raise PermissionError on Windows NT or later
@@ -39,6 +38,8 @@ def shell():
             # deleting test file seperated will be OK.
             if os.path.exists(test_file.name):
                 os.unlink(test_file.name)
+
+    sys.exit(rc)
 
 
 if __name__ == "__main__":

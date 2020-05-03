@@ -11,8 +11,7 @@ def functional_testing():
     child = pexpect.spawn('/usr/bin/env python -m DebugLibrary.shell')
     child.expect('Enter interactive shell', timeout=5)
 
-    def check_prompt(keys, pattern):
-        child.write(keys)
+    def check_result(pattern):
         index = child.expect([pattern, pexpect.EOF, pexpect.TIMEOUT],
                              timeout=TIMEOUT_SECONDS)
         try:
@@ -21,17 +20,14 @@ def functional_testing():
             print('Screen buffer: ', child._buffer.getvalue())
             raise
 
+    def check_prompt(keys, pattern):
+        child.write(keys)
+        check_result(pattern)
         child.write('\003')  # ctrl-c: reset inputs
 
     def check_command(command, pattern):
         child.sendline(command)
-        index = child.expect([pattern, pexpect.EOF, pexpect.TIMEOUT],
-                             timeout=TIMEOUT_SECONDS)
-        try:
-            assert index == 0
-        except AssertionError:
-            print('Screen buffer: ', child._buffer.getvalue())
-            raise
+        check_result(pattern)
 
     check_prompt('key\t', 'keywords')
     check_prompt('key\t', 'Keyword Should Exist')
@@ -46,6 +42,11 @@ def functional_testing():
     check_command('help keywords', 'Print keywords of libraries')
     check_command('k builtin', 'Sleep')
     check_command('d sleep', 'Pauses the test executed for the given time')
+    check_command('@{{list}} =  Create List    hello    world',
+                  "@{{list}} = ['helo', 'world']")
+
+    check_command('fail', 'AssertionError')
+    check_command('nothing', "No keyword with name 'nothing' found.")
 
     return 'OK'
 
