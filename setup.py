@@ -9,7 +9,7 @@ from setuptools import setup
 ROOT = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(ROOT, 'README.rst')).read()
 
-install_requires = ['prompt-toolkit < 3']
+install_requires = ['prompt-toolkit < 3']  # 3.0 is not compatible with py3.5
 install_requires.append('robotframework >= 3.0')
 
 
@@ -23,7 +23,7 @@ def read(*names, **kwargs):
 
 def find_version(*file_paths):
     version_file = read(*file_paths)
-    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
+    version_match = re.search(r"^VERSION = ['\"]([^'\"]*)['\"]",
                               version_file, re.M)
     if version_match:
         return version_match.group(1)
@@ -32,18 +32,17 @@ def find_version(*file_paths):
 
 setup(
     name='robotframework-debuglibrary',
-    version=find_version('DebugLibrary.py'),
+    version=find_version('DebugLibrary/version.py'),
     description='RobotFramework debug library and an interactive shell',
     long_description=README,
     author='Xie Yanbo',
     author_email='xieyanbo@gmail.com',
     license='New BSD',
-    packages=[],
-    py_modules=['DebugLibrary'],
+    packages=['DebugLibrary'],
     entry_points={
         'console_scripts': [
-            'rfshell = DebugLibrary:shell',
-            'rfdebug = DebugLibrary:shell',
+            'rfshell = DebugLibrary.shell:shell',
+            'rfdebug = DebugLibrary.shell:shell',
         ],
     },
     zip_safe=False,
@@ -51,7 +50,7 @@ setup(
     keywords='robotframework,debug,shell,repl',
     install_requires=install_requires,
     tests_require='pexpect',
-    test_suite='test_debuglibrary.suite',
+    test_suite='DebugLibrary.tests.test_debuglibrary.suite',
     platforms=['Linux', 'Unix', 'Windows', 'MacOS X'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',

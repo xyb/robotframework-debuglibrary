@@ -8,3 +8,4 @@ report.html
 .venv
 TODO
 .eggs/
+.vscode

@@ -8,7 +8,7 @@ TIMEOUT_SECONDS = 2
 
 
 def functional_testing():
-    child = pexpect.spawn('/usr/bin/env python DebugLibrary.py', echo=True)
+    child = pexpect.spawn('/usr/bin/env python -m DebugLibrary.shell')
     child.expect('Enter interactive shell', timeout=5)
 
     def check_prompt(keys, pattern):
