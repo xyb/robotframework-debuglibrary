@@ -12,6 +12,10 @@ which can be used as an interactive shell(REPL) also.
 
 .. _`RobotFramework`: http://robotframework.org/
 
+.. image:: https://github.com/xyb/robotframework-debuglibrary/workflows/test/badge.svg?branch=master
+   :target: https://github.com/xyb/robotframework-debuglibrary
+   :alt: test
+
 .. image:: https://img.shields.io/pypi/v/robotframework-debuglibrary.svg
    :target: https://pypi.org/project/robotframework-debuglibrary/
    :alt: Latest version
@@ -36,7 +40,7 @@ NOTICE: 2.0 is not compatible with python 2
 *******************************************
 
 ``DebugLibrary`` >= 2.0.0 supports Python versions 3.x only.
-If you still using python 2.7, please use ``DebugLibrary`` < 2.0.0
+If you still using python 2.7, please use ``DebugLibrary`` < 2.0.0 ::
 
     pip install 'robotframework-debuglibrary<2'
 
