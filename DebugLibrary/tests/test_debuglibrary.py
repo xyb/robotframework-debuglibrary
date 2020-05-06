@@ -9,7 +9,7 @@ TIMEOUT_SECONDS = 2
 
 def functional_testing():
     child = pexpect.spawn('/usr/bin/env python -m DebugLibrary.shell')
-    child.expect('Enter interactive shell', timeout=5)
+    child.expect('Enter interactive shell', timeout=TIMEOUT_SECONDS * 3)
 
     def check_result(pattern):
         index = child.expect([pattern, pexpect.EOF, pexpect.TIMEOUT],
@@ -29,6 +29,7 @@ def functional_testing():
         child.sendline(command)
         check_result(pattern)
 
+    # auto complete
     check_prompt('key\t', 'keywords')
     check_prompt('key\t', 'Keyword Should Exist')
     check_prompt('buil\t', 'Library: BuiltIn')
@@ -36,15 +37,23 @@ def functional_testing():
     check_prompt('get\t', 'Get Count')
     check_prompt('get\t', 'Get Time')
 
+    # keyword
     check_command('log to console  hello', 'hello')
     check_command('get time', '.*-.*-.* .*:.*:.*')
     check_prompt('g', 'et time')
     check_command('help keywords', 'Print keywords of libraries')
     check_command('k builtin', 'Sleep')
     check_command('d sleep', 'Pauses the test executed for the given time')
+
+    # var
     check_command('@{{list}} =  Create List    hello    world',
                   "@{{list}} = ['helo', 'world']")
+    check_command('${list}', "['helo', 'world']")
+    check_command('&{dict} =  Create Dictionary    name=admin',
+                  "&{dict} = {'name': 'admin'}")
+    check_command('${dict.name}', 'admin')
 
+    # fail-safe
     check_command('fail', 'AssertionError')
     check_command('nothing', "No keyword with name 'nothing' found.")
 
