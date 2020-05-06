@@ -3,16 +3,18 @@ from prompt_toolkit.formatted_text import FormattedText
 from prompt_toolkit.styles import Style
 
 NORMAL_STYLE = Style.from_dict({
-    'head': '#00FF00',
-    'message': '#CCCCCC',
+    'head': 'fg:green',
+    'message': 'fg:silver',
 })
 
 ERROR_STYLE = Style.from_dict({
-    'head': '#FF0000',
-    'message': '#FFFFFF',
+    'head': 'fg:red',
+    'message': 'fg:white',
 })
 
-DEBUG_PROMPT_STYLE = Style.from_dict({'prompt': '#0000FF'})
+DEBUG_PROMPT_STYLE = Style.from_dict({
+    'prompt': 'blue',
+})
 
 
 def print_output(head, message, style=NORMAL_STYLE):
