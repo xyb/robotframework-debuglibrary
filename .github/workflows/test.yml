@@ -33,4 +33,5 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=80 --statistics
     - name: Test
       run: |
+        python setup.py develop
         python setup.py test

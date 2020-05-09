@@ -8,9 +8,13 @@ from prompt_toolkit.shortcuts import CompleteStyle, prompt
 
 class BaseCmd(cmd.Cmd):
     """Basic REPL tool."""
+    prompt = '> '
+    repeat_last_nonempty_command = False
 
     def emptyline(self):
-        """Do not repeat last command if press enter only."""
+        """Do not repeat last command if input empty unlese repeat_last_command."""
+        if self.repeat_last_nonempty_command:
+            return super(BaseCmd, self).emptyline()
 
     def do_exit(self, arg):
         """Exit the interpreter. You can also use the Ctrl-D shortcut."""
@@ -51,14 +55,57 @@ class BaseCmd(cmd.Cmd):
     def get_completer(self):
         """Get completer instance."""
 
-    def pre_loop(self):
+    def pre_loop_iter(self):
         """Excute before every loop iteration."""
+
+    def loop_once(self):
+        self.pre_loop_iter()
+        if self.cmdqueue:
+            line = self.cmdqueue.pop(0)
+        else:
+            try:
+                line = self.get_input()
+            except KeyboardInterrupt:
+                return
+
+        if line == 'exit':
+            line = 'EOF'
+
+        line = self.precmd(line)
+        if line == 'EOF':
+            # do not run 'EOF' command to avoid override 'lastcmd'
+            stop = True
+        else:
+            stop = self.onecmd(line)
+        stop = self.postcmd(stop, line)
+        return stop
+
+    def cmdloop(self, intro=None):
+        """Better command loop.
+
+        override default cmdloop method
+        """
+        if intro is not None:
+            self.intro = intro
+        if self.intro:
+            self.stdout.write(self.intro)
+            self.stdout.write('\n')
+
+        self.preloop()
+
+        stop = None
+        while not stop:
+            stop = self.loop_once()
+
+        self.postloop()
+
+    def get_input(self):
+        return input(prompt=self.prompt)
 
 
 class PromptToolkitCmd(BaseCmd):
     """CMD shell using prompt-toolkit."""
 
-    prompt = '> '
     get_prompt_tokens = None
     prompt_style = None
     intro = '''\
@@ -71,44 +118,21 @@ Type "help" for more information.\
         BaseCmd.__init__(self, completekey, stdin, stdout)
         self.history = FileHistory(os.path.expanduser(history_path))
 
-    def cmdloop(self, intro=None):
-        """Better command loop supported by prompt_toolkit.
-
-        override default cmdloop method
-        """
-        if intro is not None:
-            self.intro = intro
-        if self.intro:
-            self.stdout.write(self.intro)
-            self.stdout.write('\n')
-
-        stop = None
-        while not stop:
-            self.pre_loop()
-            if self.cmdqueue:
-                line = self.cmdqueue.pop(0)
-            else:
-                kwargs = dict(
-                    history=self.history,
-                    auto_suggest=AutoSuggestFromHistory(),
-                    enable_history_search=True,
-                    completer=self.get_completer(),
-                    complete_style=CompleteStyle.MULTI_COLUMN,
-                )
-                if self.get_prompt_tokens:
-                    kwargs['style'] = self.prompt_style
-                    prompt_str = self.get_prompt_tokens(self.prompt)
-                else:
-                    prompt_str = self.prompt
-                try:
-                    line = prompt(message=prompt_str, **kwargs)
-                except KeyboardInterrupt:
-                    continue
-                except EOFError:
-                    line = 'EOF'
-
-            line = self.precmd(line)
-            stop = self.onecmd(line)
-            stop = self.postcmd(stop, line)
-
-        self.postloop()
+    def get_input(self):
+        kwargs = dict(
+            history=self.history,
+            auto_suggest=AutoSuggestFromHistory(),
+            enable_history_search=True,
+            completer=self.get_completer(),
+            complete_style=CompleteStyle.MULTI_COLUMN,
+        )
+        if self.get_prompt_tokens:
+            kwargs['style'] = self.prompt_style
+            prompt_str = self.get_prompt_tokens(self.prompt)
+        else:
+            prompt_str = self.prompt
+        try:
+            line = prompt(message=prompt_str, **kwargs)
+        except EOFError:
+            line = 'EOF'
+        return line

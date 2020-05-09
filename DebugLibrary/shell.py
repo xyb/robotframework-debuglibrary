@@ -30,7 +30,7 @@ def shell():
             args = default_no_logs.split() + [test_file.name]
 
         try:
-            rc = run_cli(args)
+            sys.exit(run_cli(args))
         finally:
             test_file.close()
             # pybot will raise PermissionError on Windows NT or later
@@ -38,8 +38,6 @@ def shell():
             # deleting test file seperated will be OK.
             if os.path.exists(test_file.name):
                 os.unlink(test_file.name)
-
-    sys.exit(rc)
 
 
 if __name__ == "__main__":

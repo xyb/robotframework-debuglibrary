@@ -4,12 +4,15 @@ from robot.api import logger
 from robot.errors import ExecutionFailed, HandlerExecutionFailed
 
 from .cmdcompleter import CmdCompleter
+from .globals import context
 from .prompttoolkitcmd import PromptToolkitCmd
 from .robotapp import get_robot_instance, reset_robotframework_exception
 from .robotkeyword import get_keywords, get_lib_keywords, run_keyword
 from .robotlib import get_builtin_libs, get_libs, get_libs_dict, match_libs
 from .robotselenium import SELENIUM_WEBDRIVERS, start_selenium_commands
-from .robotvar import assign_variable
+from .sourcelines import (RobotNeedUpgrade, print_source_lines,
+                          print_test_case_lines)
+from .steplistener import is_step_mode, set_step_mode
 from .styles import (DEBUG_PROMPT_STYLE, get_debug_prompt_tokens, print_error,
                      print_output)
 
@@ -56,7 +59,7 @@ class DebugCmd(PromptToolkitCmd):
         """Run after a command."""
         return stop
 
-    def pre_loop(self):
+    def pre_loop_iter(self):
         """Reset robotframework before every loop iteration."""
         reset_robotframework_exception()
 
@@ -208,3 +211,80 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
         print_error('< not find keyword', kw_name)
 
     do_d = do_docs
+
+    def emptyline(self):
+        """Repeat last nonempty command if in step mode."""
+        self.repeat_last_nonempty_command = is_step_mode()
+        return super(DebugCmd, self).emptyline()
+
+    def append_command(self, command):
+        """Append a command to queue."""
+        self.cmdqueue.append(command)
+
+    def append_exit(self):
+        """Append exit command to queue."""
+        self.append_command('exit')
+
+    def do_step(self, args):
+        """Execute the current line, stop at the first possible occasion."""
+        set_step_mode(on=True)
+        self.append_exit()  # pass control back to robot runner
+
+    do_s = do_step
+
+    def do_next(self, args):
+        """Continue execution until the next line is reached or it returns."""
+        self.do_step(args)
+
+    do_n = do_next
+
+    def do_continue(self, args):
+        """Continue execution."""
+        self.do_exit(args)
+
+    do_c = do_continue
+
+    def do_list(self, args):
+        """List source code for the current file."""
+
+        self.list_source(longlist=False)
+
+    do_l = do_list
+
+    def do_longlist(self, args):
+        """List the whole source code for the current test case."""
+
+        self.list_source(longlist=True)
+
+    do_ll = do_longlist
+
+    def list_source(self, longlist=False):
+        """List source code."""
+        if not is_step_mode():
+            print('Please run `step` or `next` command first.')
+            return
+
+        if longlist:
+            print_function = print_test_case_lines
+        else:
+            print_function = print_source_lines
+
+        try:
+            print_function(context.current_source_path,
+                           context.current_source_lineno)
+        except RobotNeedUpgrade:
+            print('Please upgrade robotframework to support list source code:')
+            print('    pip install "robotframework>=3.2" -U')
+
+    def do_exit(self, args):
+        """Exit debug shell."""
+        set_step_mode(on=False)  # explicitly exit REPL will disable step mode
+        self.append_exit()
+        return super(DebugCmd, self).do_exit(args)
+
+    def onecmd(self, line):
+        # restore last command acrossing different Cmd instances
+        self.lastcmd = context.last_command
+        stop = super(DebugCmd, self).onecmd(line)
+        context.last_command = self.lastcmd
+        return stop

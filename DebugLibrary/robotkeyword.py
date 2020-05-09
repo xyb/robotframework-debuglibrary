@@ -1,7 +1,5 @@
 import re
 
-from robot.libdocpkg.model import LibraryDoc
-
 from .memoize import memoize
 from .robotlib import ImportedLibraryDocBuilder, get_libs
 from .robotvar import assign_variable
@@ -16,6 +14,7 @@ KEYWORD_SEP = re.compile('  +|\t')
 
 def parse_keyword(command):
     """Split a robotframework keyword string."""
+    # TODO use robotframework functions
     return KEYWORD_SEP.split(command)
 
 
