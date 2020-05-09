@@ -62,7 +62,7 @@ Or you can run it standalone as a ``RobotFramework`` shell::
 
     $ rfdebug
     [...snap...]
-    >>>>> Enter interactive shell, only accepted plain text format keyword.
+    >>>>> Enter interactive shell
     > help
     Input Robotframework keywords, or commands listed below.
     Use "libs" or "l" to see available libraries,
@@ -71,8 +71,8 @@ Or you can run it standalone as a ``RobotFramework`` shell::
 
     Documented commands (type help <topic>):
     ========================================
-    EOF  d  docs  exit  help  k  keywords  l  libs  pdb  s  selenium
-
+    EOF  continue  docs  help  keywords  libs  ll        n     pdb  selenium
+    c    d         exit  k     l         list  longlist  next  s    step
     > log  hello
     > get time
     < '2011-10-13 18:50:31'
@@ -126,6 +126,40 @@ keywords of a library.
 
 ``rfdebug`` accept any ``pybot`` arguments, but by default, ``rfdebug``
 disabled all logs with ``-l None -x None -o None -L None -r None``.
+
+Step debugging
+**************
+
+``DebugLibrary`` support step debugging since version ``2.1.0``.
+You can use ``step``/``s``, ``next``/``n``, ``continue``/``c``,
+``list``/``l`` and ``longlist``/``ll`` to trace and view the code
+step by step like in ``pdb``::
+
+    $ robot some.robot
+    [...snap...]
+    >>>>> Enter interactive shell
+    > l
+    Please run `step` or `next` command first.
+    > s
+    .> /Users/xyb/some.robot(7)
+    -> log to console  hello
+    => BuiltIn.Log To Console  hello
+    > l
+      2   	Library  DebugLibrary
+      3
+      4   	** test case **
+      5   	test
+      6   	    debug
+      7 ->	    log to console  hello
+      8   	    log to console  world
+    > n
+    hello
+    .> /Users/xyb/some.robot(8)
+    -> log to console  world
+    => BuiltIn.Log To Console  world
+    > c
+    >>>>> Exit shell.
+    world
 
 Submitting issues
 -----------------

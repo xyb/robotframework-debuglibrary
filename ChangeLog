@@ -1,3 +1,8 @@
+2020-05-09  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * release version 2.1.0
+    * add step, next, continue, list and longlist commands
+
 2020-05-03  Xie Yanbo  <xieyanbo@gmail.com>
 
     * release version 2.0.0
