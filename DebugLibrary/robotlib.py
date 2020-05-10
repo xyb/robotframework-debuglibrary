@@ -1,5 +1,3 @@
-import re
-
 from robot.libdocpkg.model import LibraryDoc
 from robot.libdocpkg.robotbuilder import KeywordDocBuilder, LibraryDocBuilder
 from robot.libraries import STDLIBS

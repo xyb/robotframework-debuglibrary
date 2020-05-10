@@ -12,7 +12,7 @@ class BaseCmd(cmd.Cmd):
     repeat_last_nonempty_command = False
 
     def emptyline(self):
-        """Do not repeat last command if input empty unlese repeat_last_command."""
+        """Do not repeat the last command if input empty unless forced to."""
         if self.repeat_last_nonempty_command:
             return super(BaseCmd, self).emptyline()
 

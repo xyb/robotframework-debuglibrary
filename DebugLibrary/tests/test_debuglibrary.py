@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import os
-import tempfile
 import unittest
 from os.path import abspath, dirname, join
 
@@ -104,17 +102,17 @@ def step_functional_testing():
 
     if support_source_lineno:
         check_command('s',  # step
-                      '/DebugLibrary/tests/step.robot\(7\).*'
+                      '/DebugLibrary/tests/step.robot(7).*'
                       '-> log to console  working.*'
                       '=> BuiltIn.Log To Console  working')
         check_command('l',  # list
                       '  7 ->	    log to console  working')
         check_command('n',  # next
-                      '/DebugLibrary/tests/step.robot\(8\).*'
+                      '/DebugLibrary/tests/step.robot(8).*'
                       '@.* =  Create List    hello    world.*'
-                      '@.* = BuiltIn\.Create List  hello  world')
+                      '@.* = BuiltIn.Create List  hello  world')
         check_command('',  # just repeat last command
-                      '/DebugLibrary/tests/step.robot\(11\).*'
+                      '/DebugLibrary/tests/step.robot(11).*'
                       '-> log to console  another test case.*'
                       '=> BuiltIn.Log To Console  another test case')
         check_command('l',  # list
@@ -135,7 +133,7 @@ def step_functional_testing():
         check_command('l',  # list
                       'Please upgrade robotframework')
         check_command('n',  # next
-                      '@.* = BuiltIn\.Create List  hello  world')
+                      '@.* = BuiltIn.Create List  hello  world')
         check_command('',  # repeat last command
                       '=> BuiltIn.Log To Console  another test case')
 
