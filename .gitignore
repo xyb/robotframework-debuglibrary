@@ -11,3 +11,5 @@ report.html
 TODO
 .eggs/
 .vscode
+.DS_Store
+*.log

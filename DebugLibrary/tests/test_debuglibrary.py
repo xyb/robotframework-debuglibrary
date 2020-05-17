@@ -86,6 +86,16 @@ def base_functional_testing():
     check_command('nothing',
                   "No keyword with name 'nothing' found.")
 
+    # debug if
+    check_command('${secs} =  Get Time  epoch',
+                  'secs.* = ')
+    check_command('Debug If  ${secs} > 1',
+                  'Enter interactive shell')
+    check_command('exit',
+                  'Exit shell.')
+    check_command('Debug If  ${secs} < 1',
+                  '> ')
+
     return 'OK'
 
 

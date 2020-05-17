@@ -1,5 +1,7 @@
 import re
 
+from robot.libraries.BuiltIn import BuiltIn
+
 from .memoize import memoize
 from .robotlib import ImportedLibraryDocBuilder, get_libs
 from .robotvar import assign_variable
@@ -73,3 +75,11 @@ def run_keyword(robot_instance, keyword):
         output = robot_instance.run_keyword(keyword, *args)
         if output:
             return ('<', repr(output))
+
+
+def run_debug_if(condition, *args):
+    """Runs DEBUG if condition is true."""
+
+    return BuiltIn().run_keyword_if(condition,
+                                    'DebugLibrary.DEBUG',
+                                    *args)
