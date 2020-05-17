@@ -1,3 +1,9 @@
+2020-05-17  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * release version 2.2.0
+    * add Debug If keyword
+    * rename libs' short name from l to ls to avoid conflict with command list
+
 2020-05-09  Xie Yanbo  <xieyanbo@gmail.com>
 
     * release version 2.1.0
