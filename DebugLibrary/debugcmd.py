@@ -143,7 +143,7 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
     def do_libs(self, args):
         """Print imported and builtin libraries, with source if `-s` specified.
 
-        l(ibs) [-s]
+        ls( libs ) [-s]
         """
         print_output('<', 'Imported libraries:')
         for lib in get_libs():
@@ -156,7 +156,7 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
         for name in sorted(get_builtin_libs()):
             print_output('   ' + name, '')
 
-    do_l = do_libs
+    do_ls = do_libs
 
     def complete_libs(self, text, line, begin_idx, end_idx):
         """Complete libs command."""

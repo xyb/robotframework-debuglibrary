@@ -128,7 +128,7 @@ The history will save at ``~/.rfdebug_history`` default or any file
 defined in environment variable ``RFDEBUG_HISTORY``.
 
 In case you don't remember the name of keyword during using ``rfdebug``,
-there are commands ``libs`` or ``l`` to list the imported libraries and
+there are commands ``libs`` or ``ls`` to list the imported libraries and
 built-in libraries, and ``keywords <lib name>`` or ``k`` to list
 keywords of a library.
 
