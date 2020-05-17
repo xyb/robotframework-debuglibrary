@@ -56,7 +56,7 @@ Usage
 -----
 
 You can use this as a library, import ``DebugLibrary`` and call ``Debug``
-keyword in your test files like this::
+or ``Debug If`` keywords in your test files like this::
 
     *** Settings ***
     Library         DebugLibrary
@@ -65,6 +65,9 @@ keyword in your test files like this::
     SOME TEST
         # some keywords...
         Debug
+        # some else...
+        ${count} =  Get Element Count  name:div_name
+        Debug If  ${count} < 1
 
 Or you can run it standalone as a ``RobotFramework`` shell::
 
