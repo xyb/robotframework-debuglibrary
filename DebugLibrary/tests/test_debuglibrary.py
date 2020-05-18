@@ -85,6 +85,8 @@ def base_functional_testing():
                   'AssertionError')
     check_command('nothing',
                   "No keyword with name 'nothing' found.")
+    check_command('get',
+                  "execution failed:.*No keyword with name 'get' found.")
 
     # debug if
     check_command('${secs} =  Get Time  epoch',

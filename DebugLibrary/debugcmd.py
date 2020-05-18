@@ -27,12 +27,12 @@ def run_robot_command(robot_instance, command):
     result = ''
     try:
         result = run_keyword(robot_instance, command)
-    except ExecutionFailed as exc:
-        print_error('! keyword:', command)
-        print_error('! execution failed:', str(exc))
     except HandlerExecutionFailed as exc:
         print_error('! keyword:', command)
         print_error('! handler execution failed:', exc.full_message)
+    except ExecutionFailed as exc:
+        print_error('! keyword:', command)
+        print_error('! execution failed:', str(exc))
     except Exception as exc:
         print_error('! keyword:', command)
         print_error('! FAILED:', repr(exc))
