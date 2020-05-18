@@ -172,6 +172,8 @@ step by step like in ``pdb``::
     >>>>> Exit shell.
     world
 
+Note: Single-step debugging does not support ``FOR`` loops currently.
+
 Submitting issues
 -----------------
 
