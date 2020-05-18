@@ -111,7 +111,7 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
     def do_selenium(self, arg):
         """Start a selenium webdriver and open url in browser you expect.
 
-        s(elenium)  [<url>]  [<browser>]
+        selenium  [<url>]  [<browser>]
 
         default url is google.com, default browser is firefox.
         """
@@ -119,8 +119,6 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
         for command in start_selenium_commands(arg):
             print_output('#', command)
             run_robot_command(self.robot, command)
-
-    do_s = do_selenium
 
     def complete_selenium(self, text, line, begin_idx, end_idx):
         """Complete selenium command."""
