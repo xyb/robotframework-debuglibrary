@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import unittest
-from os.path import abspath, dirname, join
 
 import pexpect
 from robot.version import get_version
@@ -39,92 +38,94 @@ def check_command(command, pattern):
 
 def base_functional_testing():
     global child
-    child = pexpect.spawn('/usr/bin/env python -m DebugLibrary.shell')
+    child = pexpect.spawn('coverage',
+                          ['run', '--append', 'DebugLibrary/shell.py'])
     child.expect('Enter interactive shell', timeout=TIMEOUT_SECONDS * 3)
 
     # auto complete
-    check_prompt('key\t',
-                 'keywords')
-    check_prompt('key\t',
-                 'Keyword Should Exist')
-    check_prompt('buil\t',
-                 'Library: BuiltIn')
-    check_prompt('builtin.\t',
-                 'Call Method')
-    check_prompt('get\t',
-                 'Get Count')
-    check_prompt('get\t',
-                 'Get Time')
+    check_prompt('key\t', 'keywords')
+    check_prompt('key\t', 'Keyword Should Exist')
+    check_prompt('k \t', 'keywords.*Keyword Should Exist')
+    check_prompt('keywords  \t', 'BuiltIn.*DebugLibrary')
+    check_prompt('keywords  debug\t', 'DebugLibrary')
+    #check_prompt('debu\t', 'DebugLibrary')
+    #check_prompt('DebugLibrary.\t', 'Debug If')
+    check_prompt('get\t', 'Get Count')
+    check_prompt('get\t', 'Get Time')
+    check_prompt('selenium  http://google.com  \t', 'firefox.*chrome')
+    check_prompt('selenium  http://google.com  fire\t', 'firefox')
 
     # keyword
-    check_command('log to console  hello',
-                  'hello')
-    check_command('get time',
-                  '.*-.*-.* .*:.*:.*')
-    check_prompt('g',
-                 'et time')
-    check_command('help keywords',
-                  'Print keywords of libraries')
-    check_command('k builtin',
-                  'Sleep')
-    check_command('d sleep',
-                  'Pauses the test executed for the given time')
+    check_command('log to console  hello', 'hello')
+    check_command('get time', '.*-.*-.* .*:.*:.*')
+    # auto suggest
+    check_prompt('g', 'et time')
+
+    # help
+    check_command('libs',
+                  'Imported libraries:.*DebugLibrary.*Builtin libraries:')
+    check_command('help libs', 'Print imported and builtin libraries,')
+    check_command('libs  \t', '-s')
+    check_command('libs  -s', 'ibraries/BuiltIn.py.*Builtin libraries:')
+    check_command('?keywords', 'Print keywords of libraries,')
+    check_command('k debuglibrary', 'Debug')
+    check_command('k nothing', 'not found library')
+    check_command('d Debug', 'Open a interactive shell,')
 
     # var
     check_command('@{{list}} =  Create List    hello    world',
-                  "@{{list}} = ['helo', 'world']")
-    check_command('${list}',
-                  "['helo', 'world']")
+                  "@{{list}} = ['hello', 'world']")
+    check_command('${list}', "['hello', 'world']")
     check_command('&{dict} =  Create Dictionary    name=admin',
                   "&{dict} = {'name': 'admin'}")
-    check_command('${dict.name}',
-                  'admin')
+    check_command('${dict.name}', 'admin')
 
     # fail-safe
-    check_command('fail',
-                  'AssertionError')
-    check_command('nothing',
-                  "No keyword with name 'nothing' found.")
+    check_command('fail', 'AssertionError')
+    check_command('nothing', "No keyword with name 'nothing' found.")
     check_command('get',
                   "execution failed:.*No keyword with name 'get' found.")
 
     # debug if
-    check_command('${secs} =  Get Time  epoch',
-                  'secs.* = ')
-    check_command('Debug If  ${secs} > 1',
-                  'Enter interactive shell')
-    check_command('exit',
-                  'Exit shell.')
-    check_command('Debug If  ${secs} < 1',
-                  '> ')
+    check_command('${secs} =  Get Time  epoch', 'secs.* = ')
+    check_command('Debug If  ${secs} > 1', 'Enter interactive shell')
+    check_command('exit', 'Exit shell.')
+    check_command('Debug If  ${secs} < 1', '> ')
+
+    # exit
+    check_command('exit', 'Exit shell.')
+    child.wait()
 
     return 'OK'
 
 
 def step_functional_testing():
     global child
-    path = join(dirname(abspath(__file__)), 'step.robot')
-    child = pexpect.spawn('/usr/bin/env robot {}'.format(path))
-    child.expect('Enter interactive shell', timeout=TIMEOUT_SECONDS * 3)
+    # Command "coverage run robot tests/step.robot" does not work,
+    # so start the program using DebugLibrary's shell instead of "robot".
+    child = pexpect.spawn('coverage',
+                          ['run', '--append', 'DebugLibrary/shell.py',
+                           'tests/step.robot'])
+    child.expect('Type "help" for more information.*>',
+                 timeout=TIMEOUT_SECONDS * 3)
 
-    check_command('list',
-                  'Please run `step` or `next` command first.')
+    check_command('list', 'Please run `step` or `next` command first.')
 
     support_source_lineno = get_version() >= '3.2'
 
     if support_source_lineno:
         check_command('s',  # step
-                      '/DebugLibrary/tests/step.robot\(7\).*'
+                      '/tests/step.robot.7..*'
                       '-> log to console  working.*'
                       '=> BuiltIn.Log To Console  working')
         check_command('l',  # list
                       '  7 ->	    log to console  working')
         check_command('n',  # next
-                      '/DebugLibrary/tests/step.robot\(8\).*'
+                      '/tests/step.robot.8..*'
                       '@.* =  Create List    hello    world.*'
                       '@.* = BuiltIn.Create List  hello  world')
         check_command('',  # just repeat last command
-                      '/DebugLibrary/tests/step.robot\(11\).*'
+                      '/tests/step.robot.11..*'
                       '-> log to console  another test case.*'
                       '=> BuiltIn.Log To Console  another test case')
         check_command('l',  # list
@@ -149,11 +150,14 @@ def step_functional_testing():
         check_command('',  # repeat last command
                       '=> BuiltIn.Log To Console  another test case')
 
-    # exit
+    # Exit the debug mode started by Debug keyword.
     check_command('c',  # continue
                   'Exit shell.*'
                   'another test case.*'
                   'end')
+    # Exit the interactive shell started by "DebugLibrary/shell.py".
+    check_command('c', 'Report: ')
+    child.wait()
 
     return 'OK'
 
