@@ -7,7 +7,8 @@ from .cmdcompleter import CmdCompleter
 from .globals import context
 from .prompttoolkitcmd import PromptToolkitCmd
 from .robotapp import get_robot_instance, reset_robotframework_exception
-from .robotkeyword import get_keywords, get_lib_keywords, run_keyword
+from .robotkeyword import (get_keywords, get_lib_keywords, find_keyword,
+                           run_keyword)
 from .robotlib import get_builtin_libs, get_libs, get_libs_dict, match_libs
 from .robotselenium import SELENIUM_WEBDRIVERS, start_selenium_commands
 from .sourcelines import (RobotNeedUpgrade, print_source_lines,
@@ -97,13 +98,14 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
             commands.append((
                 name,
                 keyword['name'],
-                'Keyword: {0}'.format(keyword['doc']),
+                'Keyword: {0}'.format(keyword['summary']),
             ))
             # name without library
             commands.append((
                 keyword['name'],
                 keyword['name'],
-                'Keyword[{0}.]: {1}'.format(keyword['lib'], keyword['doc']),
+                'Keyword[{0}.]: {1}'.format(keyword['lib'],
+                                            keyword['summary']),
             ))
 
         return CmdCompleter(commands, self)
@@ -138,6 +140,13 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
 
         run_robot_command(self.robot, command)
 
+    def _print_lib_info(self, lib, with_source_path=False):
+        print_output('   {}'.format(lib.name), lib.version)
+        if lib.doc:
+            logger.console('       {}'.format(lib.doc.split('\n')[0]))
+        if with_source_path:
+            logger.console('       {}'.format(lib.source))
+
     def do_libs(self, args):
         """Print imported and builtin libraries, with source if `-s` specified.
 
@@ -145,11 +154,7 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
         """
         print_output('<', 'Imported libraries:')
         for lib in get_libs():
-            print_output('   {}'.format(lib.name), lib.version)
-            if lib.doc:
-                logger.console('       {}'.format(lib.doc.split('\n')[0]))
-            if '-s' in args:
-                logger.console('       {}'.format(lib.source))
+            self._print_lib_info(lib, with_source_path='-s' in args)
         print_output('<', 'Builtin libraries:')
         for name in sorted(get_builtin_libs()):
             print_output('   ' + name, '')
@@ -179,7 +184,8 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
             lib = libs[name]
             print_output('< Keywords of library', name)
             for keyword in get_lib_keywords(lib):
-                print_output('   {}\t'.format(keyword['name']), keyword['doc'])
+                print_output('   {}\t'.format(keyword['name']),
+                             keyword['summary'])
 
     do_k = do_keywords
 
@@ -194,19 +200,20 @@ Access https://github.com/xyb/robotframework-debuglibrary for more details.\
 
     complete_k = complete_keywords
 
-    def do_docs(self, kw_name):
+    def do_docs(self, keyword_name):
         """Get keyword documentation for individual keywords.
 
          d(ocs) [<keyword_name>]
         """
 
-        for lib in get_libs():
-            for keyword in get_lib_keywords(lib, long_format=True):
-                if keyword['name'].lower() == kw_name.lower():
-                    logger.console(keyword['doc'])
-                    return
-
-        print_error('< not find keyword', kw_name)
+        keywords = find_keyword(keyword_name)
+        if not keywords:
+            print_error('< not find keyword', keyword_name)
+        elif len(keywords) == 1:
+            logger.console(keywords[0]['doc'])
+        else:
+            print_error('< found {} keywords'.format(len(keywords)),
+                        ', '.join(keywords))
 
     do_d = do_docs
 

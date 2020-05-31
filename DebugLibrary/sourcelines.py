@@ -24,42 +24,48 @@ def print_source_lines(source_file, lineno, before_and_after=5):
     _print_lines(lines, start_index, end_index, lineno)
 
 
-def print_test_case_lines(source_file, lineno):
+def print_test_case_lines(source_file, current_lineno):
     check_version()
 
-    if not source_file or not lineno:
+    if not source_file or not current_lineno:
         return
 
     lines = open(source_file).readlines()
-    current_lineno = lineno
 
     # find the first line of current test case
-    line_index = current_lineno - 1
-    while line_index >= 0:
-        line_index -= 1
-        line = lines[line_index]
-        if not _inside_test_case_block(line):
-            break
-    start_index = line_index
-
+    start_index = _find_first_lineno(lines, current_lineno)
     # find the last line of current test case
-    line_index = current_lineno - 1
+    end_index = _find_last_lineno(lines, current_lineno)
+
+    _print_lines(lines, start_index, end_index, current_lineno)
+
+
+def _find_last_lineno(lines, begin_lineno):
+    line_index = begin_lineno - 1
     while line_index < len(lines):
         line = lines[line_index]
         if not _inside_test_case_block(line):
             break
         line_index += 1
-    end_index = line_index
+    return line_index
 
-    _print_lines(lines, start_index, end_index, lineno)
+
+def _find_first_lineno(lines, begin_lineno):
+    line_index = begin_lineno - 1
+    while line_index >= 0:
+        line_index -= 1
+        line = lines[line_index]
+        if not _inside_test_case_block(line):
+            break
+    return line_index
 
 
 def _inside_test_case_block(line):
+    if line.startswith(' '):
+        return True
+    if line.startswith('\t'):
+        return True
     if line.startswith('#'):
-        return True
-    elif line.startswith(' '):
-        return True
-    elif line.startswith('\t'):
         return True
     return False
 

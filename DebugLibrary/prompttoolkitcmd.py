@@ -58,15 +58,20 @@ class BaseCmd(cmd.Cmd):
     def pre_loop_iter(self):
         """Excute before every loop iteration."""
 
-    def loop_once(self):
-        self.pre_loop_iter()
+    def _get_input(self):
         if self.cmdqueue:
-            line = self.cmdqueue.pop(0)
+            return self.cmdqueue.pop(0)
         else:
             try:
-                line = self.get_input()
+                return self.get_input()
             except KeyboardInterrupt:
                 return
+
+    def loop_once(self):
+        self.pre_loop_iter()
+        line = self._get_input()
+        if line is None:
+            return
 
         if line == 'exit':
             line = 'EOF'
