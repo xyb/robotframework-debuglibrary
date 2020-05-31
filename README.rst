@@ -12,6 +12,14 @@ which can be used as an interactive shell(REPL) also.
 
 .. _`RobotFramework`: http://robotframework.org/
 
+.. image:: https://api.codeclimate.com/v1/badges/5201026ff11b63530cf5/maintainability
+   :target: https://codeclimate.com/github/xyb/robotframework-debuglibrary/maintainability
+   :alt: Maintainability
+
+.. image:: https://api.codeclimate.com/v1/badges/5201026ff11b63530cf5/test_coverage
+   :target: https://codeclimate.com/github/xyb/robotframework-debuglibrary/test_coverage
+   :alt: Test Coverage
+
 .. image:: https://github.com/xyb/robotframework-debuglibrary/workflows/test/badge.svg?branch=master
    :target: https://github.com/xyb/robotframework-debuglibrary
    :alt: test
