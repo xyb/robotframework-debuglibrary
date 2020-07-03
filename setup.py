@@ -45,7 +45,7 @@ setup(
     url='https://github.com/xyb/robotframework-debuglibrary/',
     keywords='robotframework,debug,shell,repl',
     install_requires=[
-        'prompt-toolkit < 3',  # 3.0 is not compatible with py3.5
+        'prompt-toolkit >= 2, < 3',  # 3.0 is not compatible with py3.5
         'robotframework >= 3.0',
     ],
     tests_require=['pexpect', 'coverage'],
