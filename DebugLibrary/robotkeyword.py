@@ -89,6 +89,8 @@ def run_keyword(robot_instance, keyword):
         output = robot_instance.run_keyword(keyword, *args)
         if output:
             return ('<', repr(output))
+        else:
+            return ('', '')
 
 
 def run_debug_if(condition, *args):
