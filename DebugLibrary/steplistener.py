@@ -43,13 +43,19 @@ class RobotLibraryStepListenerMixin:
         self.debug()
 
 
+# Hack to find the current runner Step to get the source path and line number.
+# This method relies on the internal implementation logic of RF and may need
+# to be modified when there are major changes to RF.
 def find_runner_step():
     stack = inspect.stack()
     for frame in stack:
-        if frame.function == 'run_steps':
+        if (frame.function == 'run_steps'  # RobotFramework < 4.0
+                or frame.function == 'run'):  # RobotFramework >= 4.0
             arginfo = inspect.getargvalues(frame.frame)
             context.current_runner = arginfo.locals.get('runner')
             context.current_runner_step = arginfo.locals.get('step')
+            if context.current_runner_step:
+                break
 
 
 def set_step_mode(on=True):
