@@ -28,7 +28,7 @@ which can be used as an interactive shell(REPL) also.
    :target: https://pypi.org/project/robotframework-debuglibrary/
    :alt: Latest version
 
-.. image:: https://img.shields.io/badge/robotframework-3.0%20%7C%203.1%20%7C%203.2-blue
+.. image:: https://img.shields.io/badge/robotframework-3%20%7C%204%20%7C%205-blue
    :target: https://github.com/xyb/robotframework-debuglibrary
    :alt: Support robotframework versions
 
