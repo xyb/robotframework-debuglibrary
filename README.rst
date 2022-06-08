@@ -192,6 +192,30 @@ Before submitting a new issue, it is always a good idea to check is the
 same bug or enhancement already reported. If it is, please add your comments
 to the existing issue instead of creating a new one.
 
+Development
+-----------
+
+If you want to develop and run DebugLibrary locally, you can use ::
+
+    $ python DebugLibrary/shell.py tests/step.robot
+
+`shell.py` is calling `robot` through a child process, so it will interrupt
+python debugging capabilities. If you want to debug in tools like vscode,
+pdb, you should run ::
+
+    $ python -m robot tests/step.robot
+
+If you want to run the test, please install the dependency packages first
+and then execute the test ::
+
+    $ python setup.py develop
+    $ python setup.py test
+
+Since RF takes over stdout, debugging information can be output with ::
+
+    import sys
+    print('some information', file=sys.stdout)
+
 License
 -------
 
