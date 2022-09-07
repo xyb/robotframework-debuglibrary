@@ -1,8 +1,18 @@
+2022-06-07  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * drop support for python 3.5
+    * get source file and lineno in RF 4.0
+    * release version 2.3.0
+
+2022-04-13  Oli I'Anson  <oianson@cisco.com>
+
+    * use exc.message instead of full_message which was removed in RF 5.0
+
 2021-03-29  Xie Yanbo  <xieyanbo@gmail.com>
 
     * release version 2.2.2
 
-2021-03-25  lobinho
+2021-03-25  lobinho  <wolfgang.falmbigl@egstonpower.com>
 
     * Adding default empty string tuple to ensure proper formatting of prompt
 
@@ -63,7 +73,7 @@
 
     * release version 1.2
 
-2020-01-30  tkoukkari
+2020-01-30  tkoukkari  <tuomas.koukkari@qentinel.com>
 
     * added support for command d(ocs)
 
@@ -75,7 +85,7 @@
 
     * release version 1.1.4
 
-2018-06-29  Jonathan Gayvallet
+2018-06-29  Jonathan Gayvallet  <jonathan.mael.gayvallet@gmail.com>
 
     * Fix keyword discovery command
 
@@ -144,7 +154,7 @@
 
     * release version 0.8.2
 
-2017-07-26  asiekkinen
+2017-07-26  asiekkinen  <aku.siekkinen@hotmail.com>
 
     * support non-UTF8 encoding terminals
 
@@ -153,7 +163,7 @@
     * robotframework 3.0 officially supported Python 3
     * release version 0.8.1
 
-2017-07-10  indrakumarm
+2017-07-10  indrakumarm  <ikumarsgp@gmail.com>
 
     * UTF-8 support for Python 3
 
@@ -161,7 +171,7 @@
 
     * release version 0.8
 
-2016-09-23  Juha Jokimäki
+2016-09-23  Juha Jokimäki  <juha.jokimaki@solita.fi>
 
     * Support assigning variables
 
@@ -169,7 +179,7 @@
 
     * release version 0.7.1
 
-2016-08-24  Steve Turner
+2016-08-24  Steve Turner  <swt@juniper.net>
 
     * Fix missing browser variable
 
@@ -185,11 +195,11 @@
     * change seleniumlibrary to selenium2library
     * Add `get_webdriver_remote` for selenium debug
 
-2015-10-07  serhatbolsu
+2015-10-07  serhatbolsu  <serhatbolsu@gmail.com>
 
     * Allow unicode characters in commands
 
-2015-05-20  Vincent Fretin
+2015-05-20  Vincent Fretin  <ville.vainio@basware.com>
 
     * support Python 3
 

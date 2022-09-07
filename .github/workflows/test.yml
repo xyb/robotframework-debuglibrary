@@ -13,11 +13,14 @@ jobs:
     name: py-${{ matrix.python-version }} rf-${{ matrix.robotframework-version }} ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
     strategy:
+      fail-fast: false
       matrix:
-        #python-version: [3.5, 3.6, 3.7, 3.8, pypy3]
-        python-version: [3.5, 3.6, 3.7, 3.8]
-        robotframework-version: [3.0, 3.1, 3.2, 5.0]
+        python-version: [3.6, 3.7, 3.8, 3.9, "3.10"]
+        robotframework-version: [3.2, 4.1, 5.0]
         platform: [ubuntu-latest, macOS-latest]
+        exclude:
+          - python-version: 3.6
+            platform: macOS-latest
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}

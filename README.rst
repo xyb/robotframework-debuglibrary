@@ -28,7 +28,7 @@ which can be used as an interactive shell(REPL) also.
    :target: https://pypi.org/project/robotframework-debuglibrary/
    :alt: Latest version
 
-.. image:: https://img.shields.io/badge/robotframework-3.0%20%7C%203.1%20%7C%203.2-blue
+.. image:: https://img.shields.io/badge/robotframework-3%20%7C%204%20%7C%205-blue
    :target: https://github.com/xyb/robotframework-debuglibrary
    :alt: Support robotframework versions
 
@@ -191,6 +191,30 @@ Bugs and enhancements are tracked in the `issue tracker
 Before submitting a new issue, it is always a good idea to check is the
 same bug or enhancement already reported. If it is, please add your comments
 to the existing issue instead of creating a new one.
+
+Development
+-----------
+
+If you want to develop and run DebugLibrary locally, you can use ::
+
+    $ python DebugLibrary/shell.py tests/step.robot
+
+`shell.py` is calling `robot` through a child process, so it will interrupt
+python debugging capabilities. If you want to debug in tools like vscode,
+pdb, you should run ::
+
+    $ python -m robot tests/step.robot
+
+If you want to run the test, please install the dependency packages first
+and then execute the test ::
+
+    $ python setup.py develop
+    $ python setup.py test
+
+Since RF takes over stdout, debugging information can be output with ::
+
+    import sys
+    print('some information', file=sys.stdout)
 
 License
 -------
