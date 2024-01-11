@@ -18,7 +18,9 @@ def print_source_lines(source_file, lineno, before_and_after=5):
     if not source_file or not lineno:
         return
 
-    lines = open(source_file).readlines()
+    with open(source_file) as f:
+        lines = f.readlines()
+
     start_index = max(1, lineno - before_and_after - 1)
     end_index = min(len(lines) + 1, lineno + before_and_after)
     _print_lines(lines, start_index, end_index, lineno)
@@ -30,7 +32,8 @@ def print_test_case_lines(source_file, current_lineno):
     if not source_file or not current_lineno:
         return
 
-    lines = open(source_file).readlines()
+    with open(source_file) as f:
+        lines = f.readlines()
 
     # find the first line of current test case
     start_index = _find_first_lineno(lines, current_lineno)
