@@ -208,6 +208,7 @@ pdb, you should run ::
 If you want to run the test, please install the dependency packages first
 and then execute the test ::
 
+    $ python -m pip install setuptools
     $ python setup.py develop
     $ python setup.py test
 

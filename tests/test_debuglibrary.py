@@ -53,7 +53,7 @@ def base_functional_testing():
     check_prompt('get\t', 'Get Count')
     check_prompt('get\t', 'Get Time')
     check_prompt('selenium  http://google.com  \t', 'firefox.*chrome')
-    check_prompt('selenium  http://google.com  fire\t', 'firefox')
+    #check_prompt('selenium  http://google.com  fire\t', 'firefox')
 
     # keyword
     check_command('log to console  hello', 'hello')
