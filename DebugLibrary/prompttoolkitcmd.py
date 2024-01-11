@@ -15,6 +15,7 @@ class BaseCmd(cmd.Cmd):
         """Do not repeat the last command if input empty unless forced to."""
         if self.repeat_last_nonempty_command:
             return super(BaseCmd, self).emptyline()
+        return None
 
     def do_exit(self, arg):
         """Exit the interpreter. You can also use the Ctrl-D shortcut."""
@@ -65,13 +66,13 @@ class BaseCmd(cmd.Cmd):
             try:
                 return self.get_input()
             except KeyboardInterrupt:
-                return
+                return None
 
     def loop_once(self):
         self.pre_loop_iter()
         line = self._get_input()
         if line is None:
-            return
+            return None
 
         if line == 'exit':
             line = 'EOF'

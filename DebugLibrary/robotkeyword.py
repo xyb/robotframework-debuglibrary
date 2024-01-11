@@ -59,6 +59,7 @@ def _execute_variable(robot_instance, variable_name, keyword, args):
     if variable_only:
         display_value = ['Log to console', keyword]
         robot_instance.run_keyword(*display_value)
+        return None
     else:
         variable_value = assign_variable(
             robot_instance,
@@ -72,7 +73,7 @@ def _execute_variable(robot_instance, variable_name, keyword, args):
 def run_keyword(robot_instance, keyword):
     """Run a keyword in robotframewrk environment."""
     if not keyword:
-        return
+        return None
 
     keyword_args = parse_keyword(keyword)
     keyword = keyword_args[0]
@@ -80,7 +81,7 @@ def run_keyword(robot_instance, keyword):
 
     is_comment = keyword.strip().startswith('#')
     if is_comment:
-        return
+        return None
 
     variable_name = keyword.rstrip('= ')
     if is_variable(variable_name):
