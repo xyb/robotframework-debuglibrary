@@ -1,3 +1,9 @@
+2024-01-12  Xie Yanbo  <xieyanbo@gmail.com>
+
+    * drop support for python 3.7
+    * support robotframework 7.0
+    * release version 2.5.0
+
 2024-01-11  Xie Yanbo  <xieyanbo@gmail.com>
 
     * support python 3.9, 3.10, 3.11 and 3.12
