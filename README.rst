@@ -20,8 +20,8 @@ which can be used as an interactive shell(REPL) also.
    :target: https://codeclimate.com/github/xyb/robotframework-debuglibrary/test_coverage
    :alt: Test Coverage
 
-.. image:: https://github.com/xyb/robotframework-debuglibrary/workflows/test/badge.svg?branch=master
-   :target: https://github.com/xyb/robotframework-debuglibrary
+.. image:: https://github.com/xyb/robotframework-debuglibrary/actions/workflows/test.yml/badge.svg
+   :target: https://github.com/xyb/robotframework-debuglibrary/actions/workflows/test.yml
    :alt: test
 
 .. image:: https://img.shields.io/pypi/v/robotframework-debuglibrary.svg
