@@ -1,7 +1,7 @@
 *** Settings ***
 Library  DebugLibrary
 
-** test case **
+** test cases **
 test1
     debug
     log to console  working
