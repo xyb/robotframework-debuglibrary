@@ -20,9 +20,15 @@ class RobotLibraryStepListenerMixin:
         find_runner_step()
         step = context.current_runner_step
 
+        path = ''
         if hasattr(step, 'lineno'):
             path = step.source
             lineno = step.lineno
+        elif 'lineno' in attrs:
+            path = attrs['source']
+            lineno = attrs['lineno']
+
+        if path:
             lineno_0_based = lineno - 1
             context.current_source_path = path
             context.current_source_lineno = lineno
@@ -41,6 +47,8 @@ class RobotLibraryStepListenerMixin:
 
         # callback debug interface
         self.debug()
+
+    start_keyword = _start_keyword
 
 
 # Hack to find the current runner Step to get the source path and line number.

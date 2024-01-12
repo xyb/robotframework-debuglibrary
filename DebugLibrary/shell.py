@@ -7,7 +7,7 @@ from robot import run_cli
 TEST_SUITE = b'''*** Settings ***
 Library  DebugLibrary
 
-** test case **
+** test cases **
 RFDEBUG REPL
     debug
 '''
